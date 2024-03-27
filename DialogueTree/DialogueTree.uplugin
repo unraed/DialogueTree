@@ -1,0 +1,33 @@
+{
+	"FileVersion": 3,
+	"Version": 1.1,
+	"VersionName": "1.1.2",
+	"FriendlyName": "DialogueTree",
+	"Description": "A customizable and easy to use plugin for creating and playing dialogue in your Unreal Engine projects.",
+	"Category": "Dialogue",
+	"CreatedBy": "Zachary Brett",
+	"CreatedByURL": "https://unraed.github.io/",
+	"DocsURL": "https://unraed.github.io/DialogueTree",
+	"MarketplaceURL": "https://com.epicgames.launcher://ue/marketplace/product/af018f2268eb426bad40d8b70e255505/",
+	"SupportURL": "https://discord.gg/mf7mGXbePB",
+	"CanContainContent": true,
+	"Installed": true,
+	"Modules": [
+		{
+			"Name": "DialogueTreeRuntime",
+			"Type": "Runtime",
+			"LoadingPhase": "PreDefault",
+			"PlatformAllowList": [
+				"Win64"
+			]
+		},
+		{
+			"Name": "DialogueTreeEditor",
+			"Type": "Editor",
+			"LoadingPhase": "PostEngineInit",
+			"PlatformAllowList": [
+				"Win64"
+			]
+		}
+	]
+}

@@ -1,0 +1,21 @@
+// Copyright Zachary Brett, 2024. All rights reserved.
+
+#pragma once 
+
+//UE
+#include "CoreMinimal.h"
+//Generated
+#include "PickableDialogueSpeaker.generated.h"
+
+/**
+* Struct serving as a data container for speaker sockets that 
+* can be selected from the dialogue graph. 
+*/
+USTRUCT()
+struct FPickableDialogueSpeaker
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, Category = "Dialogue")
+	class UDialogueSpeakerSocket* Speaker;
+};
