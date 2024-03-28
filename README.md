@@ -22,13 +22,13 @@ There are two options for how to install the plugin.
 5) Wait until the project launches. This can take several minutes.
 6) Verify that the plugin is activated by going to Edit>>Plugins and making sure Dialogue Tree is checked.
 
-This second option is also free, and has the advantage of allowing you to modify Dialogue Tree's ".uplugin" file to compile for platforms that I do not currently support. To do this, simply open up the ".uplugin" file and add the desired platform to the "PlatformAllowList." 
+This second option is also free, and has the advantage of allowing you to modify Dialogue Tree's ".uplugin" file to compile for platforms that I do not currently support. To do this, simply open up the ".uplugin" file and add the desired platform to the "PlatformAllowList." Just keep in mind that the support I can offer for other platforms may be limited.
 
 ## Supported Engine Versions 
 Currently, the plugin supports Unreal Engine 5.1-5.3. I will be adding support for new versions as they come out. Unfortunately, I will not be able to extend support to engine versions prior to 5.1. 
 
 ## Supported Platforms 
-Currently, I am only supporting Win64 as a target/development platform. I may extend support to other platforms in future. In the meantime, you are welcome to recompile the plugin for other platforms on an "at your own risk" basis using the procedure discussed under [**Installation**](README.md#Installation) above. 
+Currently, I am only supporting Win64 as a target/development platform. I may extend support to other platforms in future. In the meantime, you are welcome to recompile the plugin for other platforms using the procedure discussed under [**Installation**](README.md#Installation) above, with the caveat mentioned there. 
 
 ## Documentation 
 For full details on the plugin, as well as tutorials to help you get started, I encourage you to check out the plugin's [**documentation site**](https://unraed.github.io/DialogueTree/). Tutorials are also available in video format on [**YouTube**](https://www.youtube.com/playlist?list=PLs_qAasHKE67uCxkipd2wC622eQKd4JLj).
