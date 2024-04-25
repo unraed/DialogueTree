@@ -7,6 +7,8 @@
 //Plugin
 #include "SGraphNodeDialogueBase.h"
 
+class UGraphNodeDialogueSpeech;
+
 /**
 * Governs the visual representation of a speech node in the dialogue graph.
 */

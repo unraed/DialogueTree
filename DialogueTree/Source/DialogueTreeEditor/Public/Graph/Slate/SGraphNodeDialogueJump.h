@@ -5,6 +5,8 @@
 //Plugin
 #include "SGraphNodeDialogueBase.h"
 
+class UGraphNodeDialogueJump;
+
 /**
 * Governs the visual representation of a jump node in the dialogue graph. 
 */

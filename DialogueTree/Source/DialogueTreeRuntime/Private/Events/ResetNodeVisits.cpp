@@ -21,9 +21,9 @@ bool UResetNodeVisits::HasAllRequirements() const
 {
 #if WITH_EDITOR
 	return TargetNode && TargetNode->GetGraphNode();
-#endif 
-
+#else
 	return TargetNode != nullptr;
+#endif 
 }
 
 FText UResetNodeVisits::GetGraphDescription_Implementation() const
@@ -37,9 +37,9 @@ FText UResetNodeVisits::GetGraphDescription_Implementation() const
 	FText BaseText = LOCTEXT("DescriptionText", "Mark {0} unvisited");
 	FText NodeText = TargetNode->GetDisplayID();
 	return FText::Format(BaseText, NodeText);
-#endif 
-
+#else
 	return FText();
+#endif 
 }
 
 UDialogueNodeSocket* UResetNodeVisits::GetTargetSocket() const

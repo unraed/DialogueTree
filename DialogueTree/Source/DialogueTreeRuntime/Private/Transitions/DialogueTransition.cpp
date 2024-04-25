@@ -2,6 +2,8 @@
 
 //Header
 #include "Transitions/DialogueTransition.h"
+//UE
+#include "Engine/World.h"
 //Plugin
 #include "Dialogue.h"
 #include "DialogueConnectionLimit.h"

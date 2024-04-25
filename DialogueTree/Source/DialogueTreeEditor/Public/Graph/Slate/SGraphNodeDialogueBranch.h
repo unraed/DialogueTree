@@ -7,6 +7,8 @@
 //Plugin
 #include "SGraphNodeDialogueBase.h"
 
+class UGraphNodeDialogueBranch;
+
 /**
 * Governs the visual representation of a branch node in the dialogue graph. 
 */

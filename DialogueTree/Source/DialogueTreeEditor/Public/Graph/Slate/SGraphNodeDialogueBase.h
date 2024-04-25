@@ -7,6 +7,7 @@
 #include "SGraphNode.h"
 
 class UEdGraphNode;
+class UGraphNodeDialogue;
 
 /**
 * Base behaviors to govern how a node should display on the dialogue graph. 

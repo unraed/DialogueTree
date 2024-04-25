@@ -7,6 +7,8 @@
 //Plugin
 #include "SGraphNodeDialogueBase.h"
 
+class UGraphNodeDialogueEvent;
+
 /**
 * Governs the visual representation of an event node in the dialogue graph. 
 */

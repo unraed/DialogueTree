@@ -166,7 +166,7 @@ void UDialogueEdGraphSchema::GetContextMenuActions(UToolMenu* Menu,
 		GetNodeContextMenu(Menu);
 
 		//Get the context menu for each of the node's pins
-		UGraphNodeDialogueBase* DialogueNode = 
+		const UGraphNodeDialogueBase* DialogueNode = 
 			Cast<UGraphNodeDialogueBase>(Context->Node);
 		check(DialogueNode);
 
