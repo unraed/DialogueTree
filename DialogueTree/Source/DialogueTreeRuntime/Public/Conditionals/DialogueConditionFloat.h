@@ -44,7 +44,7 @@ public:
 private:
 	/** The query for the condition */
 	UPROPERTY()
-	UDialogueQueryFloat* Query;
+	TObjectPtr<UDialogueQueryFloat> Query;
 
 	/** The comparison to make against the query */
 	UPROPERTY(EditAnywhere, Category="Dialogue")

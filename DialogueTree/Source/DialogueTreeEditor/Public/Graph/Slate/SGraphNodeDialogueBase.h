@@ -99,7 +99,7 @@ private:
 
 protected: 
 	/** Cached dialogue node this is representing */
-	UGraphNodeDialogue* DialogueNode;
+	TObjectPtr<UGraphNodeDialogue> DialogueNode;
 
 	/** Hold Input Pins. Equivalent of SGraphNode's LeftNodeBox. */
 	TSharedPtr<SHorizontalBox> InputPinBox;

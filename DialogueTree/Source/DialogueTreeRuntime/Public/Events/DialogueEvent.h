@@ -6,6 +6,7 @@
 #include "Events/DialogueEventBase.h"
 //Plugin
 #include "DialogueSpeakerComponent.h"
+#include "SpeechDetails.h"
 //Generated
 #include "DialogueEvent.generated.h"
 
@@ -62,6 +63,16 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Dialogue")
 	TArray<UDialogueSpeakerSocket*> GetAdditionalSpeakerSockets() const;
 
+	/**
+	* Retrieves the speech details for the speech this event was 
+	* called from. If not called from a speech, retrieves an empty 
+	* speech details struct.
+	* 
+	* @param InDetails - FSpeechDetails, the new speech details. 
+	*/
+	UFUNCTION(BlueprintCallable, Category="Dialogue")
+	const FSpeechDetails GetCurrentSpeechDetails() const;
+
 protected:
 	/**
 	* User specified behavior for the event.
@@ -74,12 +85,38 @@ protected:
 	void OnPlayEvent(FSpeakerActorEntry InSpeaker, const TArray< FSpeakerActorEntry>& OtherSpeakers);
 	virtual void OnPlayEvent_Implementation(FSpeakerActorEntry InSpeaker, const TArray<FSpeakerActorEntry>& OtherSpeakers) {};
 
+	/**
+	* Helper function to spawn an actor to the currently active
+	* world via a dialogue event.
+	*
+	* @param ActorClass - TSubclassOf<AActor>, the actor type to
+	* spawn.
+	* @param Location - const FVector, the location at which to
+	* spawn the actor.
+	* @param Rotation - const FRotator, the rotation at which to
+	* spawn the actor.
+	* @param SpawnParams - const FActorSpawnParameters, any
+	* additional spawn parameters.
+	* @param Owner - AActor*, actor to set as the spawned actor's 
+	* owner.
+	* @param CollisionHandlingMethod - 
+	* ESpawnActorCollisionHandlingMethod, how to handle collisions.
+	* @return AActor* - the spawned actor, or nullptr if failed to
+	* spawn.
+	*/
+	UFUNCTION(BlueprintCallable, Category = "DialogueEvent")
+	AActor* SpawnActorToCurrentWorld(TSubclassOf<AActor> ActorClass,
+		const FVector Location, const FRotator Rotation, 
+		AActor* Owner = nullptr, 
+		ESpawnActorCollisionHandlingMethod CollisionHandlingMethod =
+		ESpawnActorCollisionHandlingMethod::Undefined);
+
 protected:
 	/** Speaker socket for the speaker the event operates on */
-	UPROPERTY(EditAnywhere, Category = "Dialogue")
-	UDialogueSpeakerSocket* Speaker;
+	UPROPERTY(EditAnywhere, Category = "DialogueEvent")
+	TObjectPtr<UDialogueSpeakerSocket> Speaker;
 
 	/** Optional additional speakers to attach to the event */
-	UPROPERTY(EditAnywhere, Category = "Dialogue")
-	TArray<UDialogueSpeakerSocket*> AdditionalSpeakers;
+	UPROPERTY(EditAnywhere, Category = "DialogueEvent")
+	TArray<TObjectPtr<UDialogueSpeakerSocket>> AdditionalSpeakers;
 };

@@ -39,7 +39,7 @@ private:
 
 private:
 	/** Cached event node this represents */
-	UGraphNodeDialogueEvent* EventNode;
+	TObjectPtr<UGraphNodeDialogueEvent> EventNode;
 
 	/** Constants */
 	const FMargin EVENT_TEXT_PADDING = FMargin(10.f, 7.f, 10.f, 7.f);

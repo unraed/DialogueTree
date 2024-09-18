@@ -76,9 +76,9 @@ UDialogue* UDialogueSpeakerComponent::GetOwnedDialogue()
 	return OwnedDialogue;
 }
 
-FGameplayTagContainer UDialogueSpeakerComponent::GetBehaviorFlags()
+FGameplayTagContainer UDialogueSpeakerComponent::GetCurrentGameplayTags()
 {
-	return BehaviorFlags;
+	return GameplayTags;
 }
 
 void UDialogueSpeakerComponent::EndCurrentDialogue()
@@ -103,39 +103,46 @@ void UDialogueSpeakerComponent::TrySkipSpeech()
 	DialogueController->Skip();
 }
 
-void UDialogueSpeakerComponent::SetBehaviorFlags(FGameplayTagContainer InFlags)
+void UDialogueSpeakerComponent::PlaySpeechAudioClip_Implementation(
+	USoundBase* InAudio)
 {
-	BehaviorFlags.Reset();
-	BehaviorFlags.AppendTags(InFlags);
-	BroadcastBehaviorFlags();
+	SetSound(InAudio);
+	Play();
 }
 
-void UDialogueSpeakerComponent::ClearBehaviorFlags()
+void UDialogueSpeakerComponent::SetCurrentGameplayTags(FGameplayTagContainer InTags)
 {
-	BehaviorFlags.Reset();
-	BroadcastBehaviorFlags();
+	GameplayTags.Reset();
+	GameplayTags.AppendTags(InTags);
+	BroadcastCurrentGameplayTags();
+}
+
+void UDialogueSpeakerComponent::ClearGameplayTags()
+{
+	GameplayTags.Reset();
+	BroadcastCurrentGameplayTags();
 }
 
 void UDialogueSpeakerComponent::StartOwnedDialogueWithNames(
-	TMap<FName, UDialogueSpeakerComponent*> InSpeakers)
+	TMap<FName, UDialogueSpeakerComponent*> InSpeakers, bool bResume)
 {
 	if (OwnedDialogue)
 	{
-		StartDialogueWithNames(OwnedDialogue, InSpeakers);
+		StartDialogueWithNames(OwnedDialogue, InSpeakers, bResume);
 	}
 }
 
 void UDialogueSpeakerComponent::StartOwnedDialogue(
-	TArray<UDialogueSpeakerComponent*> InSpeakers)
+	TArray<UDialogueSpeakerComponent*> InSpeakers, bool bResume)
 {
 	if (OwnedDialogue)
 	{
-		StartDialogue(OwnedDialogue, InSpeakers);
+		StartDialogue(OwnedDialogue, InSpeakers, bResume);
 	}
 }
 
 void UDialogueSpeakerComponent::StartDialogueWithNames(UDialogue* InDialogue, 
-	TMap<FName, UDialogueSpeakerComponent*> InSpeakers)
+	TMap<FName, UDialogueSpeakerComponent*> InSpeakers, bool bResume)
 {	 
 	if (!InDialogue)
 	{
@@ -163,7 +170,7 @@ void UDialogueSpeakerComponent::StartDialogueWithNames(UDialogue* InDialogue,
 }
 
 void UDialogueSpeakerComponent::StartDialogue(UDialogue* InDialogue,
-	TArray<UDialogueSpeakerComponent*> InSpeakers)
+	TArray<UDialogueSpeakerComponent*> InSpeakers, bool bResume)
 {
 	//Validate that a dialogue was provided 
 	if (!InDialogue)
@@ -193,10 +200,90 @@ void UDialogueSpeakerComponent::StartDialogue(UDialogue* InDialogue,
 		InSpeakers.Add(this);
 	}
 
-	DialogueController->StartDialogue(InDialogue, InSpeakers);
+	DialogueController->StartDialogue(InDialogue, InSpeakers, bResume);
 }
 
-FSpeakerActorEntry UDialogueSpeakerComponent::ToSpeakerActorEntry() 
+void UDialogueSpeakerComponent::StartOwnedDialogueWithNamesAt(FName InNodeID, TMap<FName, UDialogueSpeakerComponent*> InSpeakers)
+{
+	if (OwnedDialogue)
+	{
+		StartDialogueWithNamesAt(OwnedDialogue, InNodeID, InSpeakers);
+	}
+}
+
+void UDialogueSpeakerComponent::StartOwnedDialogueAt(FName InNodeID, TArray<UDialogueSpeakerComponent*> InSpeakers)
+{
+	if (OwnedDialogue)
+	{
+		StartDialogueAt(OwnedDialogue, InNodeID, InSpeakers);
+	}
+}
+
+void UDialogueSpeakerComponent::StartDialogueWithNamesAt(UDialogue* InDialogue, FName InNodeID, TMap<FName, UDialogueSpeakerComponent*> InSpeakers)
+{
+	if (!InDialogue)
+	{
+		UE_LOG(
+			LogDialogueTree,
+			Warning,
+			TEXT("Speaker: No valid dialogue found to start")
+		);
+		return;
+	}
+
+	//Validate the controller
+	if (!DialogueController)
+	{
+		UE_LOG(
+			LogDialogueTree,
+			Error,
+			TEXT("Speaker could not start dialogue because dialogue controller was invalid")
+		);
+		return;
+	}
+
+	//Start the dialogue 
+	DialogueController->StartDialogueWithNamesAt(
+		InDialogue, 
+		InNodeID, 
+		InSpeakers
+	);
+}
+
+void UDialogueSpeakerComponent::StartDialogueAt(UDialogue* InDialogue, FName InNodeID, TArray<UDialogueSpeakerComponent*> InSpeakers)
+{
+	//Validate that a dialogue was provided 
+	if (!InDialogue)
+	{
+		UE_LOG(
+			LogDialogueTree,
+			Warning,
+			TEXT("Speaker: No valid dialogue found to start")
+		);
+		return;
+	}
+
+	//Validate the controller
+	if (!DialogueController)
+	{
+		UE_LOG(
+			LogDialogueTree,
+			Error,
+			TEXT("Speaker could not start dialogue because dialogue controller was invalid")
+		);
+		return;
+	}
+
+	//Start the dialogue 
+	if (InSpeakers.Contains(this) == false)
+	{
+		InSpeakers.Add(this);
+	}
+
+	DialogueController->StartDialogueAt(InDialogue, InNodeID, InSpeakers);
+}
+
+FSpeakerActorEntry UDialogueSpeakerComponent::ToSpeakerActorEntry()
 {
 	FSpeakerActorEntry Entry;
 	Entry.SpeakerComponent = this; 
@@ -205,7 +292,13 @@ FSpeakerActorEntry UDialogueSpeakerComponent::ToSpeakerActorEntry()
 	return Entry;
 }
 
-void UDialogueSpeakerComponent::BroadcastBehaviorFlags()
+void UDialogueSpeakerComponent::BroadcastSpeechSkipped(
+	FSpeechDetails SkippedSpeech)
 {
-	OnBehaviorFlagsChanged.Broadcast(BehaviorFlags);
+	OnSpeechSkipped.Broadcast(SkippedSpeech);
+}
+
+void UDialogueSpeakerComponent::BroadcastCurrentGameplayTags()
+{
+	OnGameplayTagsChanged.Broadcast(GameplayTags);
 }

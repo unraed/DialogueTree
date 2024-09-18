@@ -83,12 +83,13 @@ public:
 	*/
 	virtual EDialogueConnectionLimit GetConnectionLimit() const;
 
-private:
 	/**
-	* Checks if the transition should exit, and triggers the transition out 
-	* if so. 
+	* Checks if the transition should exit, and triggers the transition out
+	* if so.
 	*/
 	void CheckTransitionConditions();
+
+private:
 
 	/**
 	* Called when the speech content has finished playing.
@@ -105,7 +106,7 @@ private:
 protected:
 	/** The node upon which the transition operates*/
 	UPROPERTY()
-	UDialogueSpeechNode* OwningNode;
+	TObjectPtr<UDialogueSpeechNode> OwningNode;
 
 	/** Whether the min play time has elapsed yet */
 	bool bMinPlayTimeElapsed = false;

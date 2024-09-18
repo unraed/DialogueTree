@@ -84,7 +84,7 @@ private:
 
 private:
 	/** Cached speech node */
-	UGraphNodeDialogueSpeech* SpeechNode;
+	TObjectPtr<UGraphNodeDialogueSpeech> SpeechNode;
 
 	/** Constants */
 	const float TITLE_BOX_PADDING = 10.f;

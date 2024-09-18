@@ -285,7 +285,7 @@ private:
 
 private:
 	/** The dialogue being edited */
-	UDialogue* TargetDialogue;
+	TObjectPtr<UDialogue> TargetDialogue;
 
 	/** The main graph viewport */
 	TSharedPtr<SGraphEditor> ViewportWidget;

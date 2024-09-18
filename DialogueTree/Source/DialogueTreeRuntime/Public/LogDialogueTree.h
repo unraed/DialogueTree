@@ -5,4 +5,8 @@
 //UE
 #include "CoreMinimal.h"
 
-DECLARE_LOG_CATEGORY_EXTERN(LogDialogueTree, Log, All);
+DIALOGUETREERUNTIME_API DECLARE_LOG_CATEGORY_EXTERN(
+	LogDialogueTree, 
+	Log, 
+	All
+);

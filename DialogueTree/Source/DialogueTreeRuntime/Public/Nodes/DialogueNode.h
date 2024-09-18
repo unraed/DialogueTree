@@ -92,33 +92,33 @@ public:
 	virtual void Skip() {};
 
 	/**
-	* Retrieves the cached index number of the node in the dialogue
+	* Retrieves the id for the node in dialogue
 	* 
-	* @return int32 - NodeIndex
+	* @return FName - NodeID
 	*/
-	int32 GetNodeIndex() const;
+	FName GetNodeID() const;
 
 	/**
-	* Sets the cached index number of the node in the dialogue. 
-	* 
-	* @param InIndex, int32, the new index
+	* Sets the id of the node in the dialogue.
+	*
+	* @param Name, FName, the new id for the node
 	*/
-	void SetNodeIndex(int32 InIndex);
+	void SetNodeID(FName InID);
 
 protected:
 	/** The owning dialogue */
 	UPROPERTY()
-	UDialogue* Dialogue;
+	TObjectPtr<UDialogue> Dialogue;
 
-	/** The index of the node within the dialogue */
+	/** The ID of the node within the dialogue */
 	UPROPERTY()
-	int32 NodeIndex;
+	FName NodeID;
 
 	/** Any direct parent nodes in the dialogue */
 	UPROPERTY()
-	TArray<UDialogueNode*> Parents;
+	TArray<TObjectPtr<UDialogueNode>> Parents;
 
 	/** Any direct child nodes in the dialogue */
 	UPROPERTY()
-	TArray<UDialogueNode*> Children;
+	TArray<TObjectPtr<UDialogueNode>> Children;
 };

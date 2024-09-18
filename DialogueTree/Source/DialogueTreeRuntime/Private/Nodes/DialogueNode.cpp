@@ -46,12 +46,12 @@ FDialogueOption UDialogueNode::GetAsOption()
     return FDialogueOption();
 }
 
-int32 UDialogueNode::GetNodeIndex() const
+FName UDialogueNode::GetNodeID() const
 {
-    return NodeIndex;
+    return NodeID;
 }
 
-void UDialogueNode::SetNodeIndex(int32 InIndex)
+void UDialogueNode::SetNodeID(FName InID) 
 {
-    NodeIndex = InIndex;
+    NodeID = InID;
 }

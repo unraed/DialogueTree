@@ -4,6 +4,7 @@
 #include "IPropertyTypeCustomization.h"
 
 class UDialogueEdGraph;
+class UGraphNodeDialogue;
 class SDialogueObjectPicker;
 
 /**
@@ -96,7 +97,7 @@ protected:
 	* @param Utils - TSharedPtr<IPropertyUtilities>, the utilities object. 
 	*/
 	void GetTargetObjects(TSharedRef<IPropertyHandle> PropertyHandle,
-		TSharedPtr<IPropertyUtilities> Utils);
+		TSharedPtr<IPropertyUtilities> Utilities);
 
 	/**
 	* Creates the default header for the property as if it had never been 
@@ -155,11 +156,17 @@ protected:
 	/**
 	* Refreshes the graph view on changing values. 
 	*/
-	void RefreshDetailsView();
+	void RefreshEditor();
 
 protected:
 	/** The graph under consideration*/
 	TWeakObjectPtr<UDialogueEdGraph> TargetGraph;
+
+	/** The graph node under consideration */
+	TWeakObjectPtr<UGraphNodeDialogue> TargetGraphNode;
+
+	/** Utils */
+	TSharedPtr<IPropertyUtilities> Utils;
 
 	/** The slate widget used by the user to pick the target object */
 	TSharedPtr<SDialogueObjectPicker> Picker;

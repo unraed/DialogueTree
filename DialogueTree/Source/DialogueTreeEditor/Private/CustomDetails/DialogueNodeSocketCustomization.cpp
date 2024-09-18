@@ -168,7 +168,7 @@ void FDialogueNodeSocketCustomization::SetSelection(UObject* InSelection)
 		TargetSocket->SetDisplayID(FText::FromName(SelectedNode->GetID()));
 	}
 
-	RefreshDetailsView();
+	RefreshEditor();
 }
 
 bool FDialogueNodeSocketCustomization::HasPrerequisites() const

@@ -23,7 +23,10 @@ ADialogueController::ADialogueController()
 
 void ADialogueController::SelectOption(int32 InOptionIndex) const
 {
-	CurrentDialogue->SelectOption(InOptionIndex);
+	if (CurrentDialogue)
+	{
+		CurrentDialogue->SelectOption(InOptionIndex);
+	}
 }
 
 TMap<FName, UDialogueSpeakerComponent*> ADialogueController::GetSpeakers() const
@@ -36,8 +39,8 @@ TMap<FName, UDialogueSpeakerComponent*> ADialogueController::GetSpeakers() const
 	return TMap<FName, UDialogueSpeakerComponent*>();
 }
 
-void ADialogueController::StartDialogueWithNames(UDialogue* InDialogue, 
-	TMap<FName, UDialogueSpeakerComponent*> InSpeakers)
+void ADialogueController::StartDialogueWithNames(UDialogue* InDialogue,
+	TMap<FName, UDialogueSpeakerComponent*> InSpeakers, bool bResume)
 {
 	if (!InDialogue)
 	{
@@ -51,18 +54,37 @@ void ADialogueController::StartDialogueWithNames(UDialogue* InDialogue,
 
 	if (!CanOpenDisplay())
 	{
+		UE_LOG(
+			LogDialogueTree,
+			Error,
+			TEXT("Could not start dialogue. CanOpenDisplay() was false.")
+		);
 		return;
 	}
 
+	//Set the target dialogue 
 	CurrentDialogue = InDialogue;
 
+	//Get start node 
+	FName StartNodeID = CurrentDialogue->GetRootNode()->GetNodeID();
+	FName RecordName = CurrentDialogue->GetFName();
+	if (bResume
+		&& DialogueRecords.Records.Contains(RecordName))
+	{
+		const FDialogueNodeVisits& Record =
+			DialogueRecords.Records[RecordName];
+		StartNodeID = CurrentDialogue->HasNode(Record.ResumeNodeID) ?
+			Record.ResumeNodeID : StartNodeID;
+	}
+
+	//Start the dialogue 
 	OpenDisplay();
-	CurrentDialogue->OpenDialogue(this, InSpeakers);
+	CurrentDialogue->OpenDialogueAt(StartNodeID, this, InSpeakers);
 	OnDialogueStarted.Broadcast();
 }
 
-void ADialogueController::StartDialogue(UDialogue* InDialogue, 
-	TArray<UDialogueSpeakerComponent*> InSpeakers)
+void ADialogueController::StartDialogue(UDialogue* InDialogue,
+	TArray<UDialogueSpeakerComponent*> InSpeakers, bool bResume)
 {
 	if (InSpeakers.IsEmpty())
 	{
@@ -92,7 +114,7 @@ void ADialogueController::StartDialogue(UDialogue* InDialogue,
 			UE_LOG(
 				LogDialogueTree,
 				Error,
-				TEXT("Could not start dialogue. A provided speaker has an" 
+				TEXT("Could not start dialogue. A provided speaker has an"
 					" unfilled DialogueName.")
 			);
 			return;
@@ -112,7 +134,111 @@ void ADialogueController::StartDialogue(UDialogue* InDialogue,
 		TargetSpeakers.Add(Speaker->GetDialogueName(), Speaker);
 	}
 
-	StartDialogueWithNames(InDialogue, TargetSpeakers);
+	StartDialogueWithNames(InDialogue, TargetSpeakers, bResume);
+}
+
+void ADialogueController::StartDialogueWithNamesAt(UDialogue* InDialogue, FName NodeID, TMap<FName, UDialogueSpeakerComponent*> InSpeakers)
+{
+	if (!InDialogue)
+	{
+		UE_LOG(
+			LogDialogueTree,
+			Error,
+			TEXT("Could not start dialogue. Provided dialogue null.")
+		);
+		return;
+	}
+
+	if (!CanOpenDisplay())
+	{
+		UE_LOG(
+			LogDialogueTree,
+			Error,
+			TEXT("Could not start dialogue. Display could not be opened.")
+		);
+		return;
+	}
+
+	if (!InDialogue->HasNode(NodeID))
+	{
+		UE_LOG(
+			LogDialogueTree,
+			Error,
+			TEXT("Could not start dialogue from Node: %s. No such node exists."),
+			*NodeID.ToString()
+		);
+		return;
+	}
+
+	CurrentDialogue = InDialogue;
+
+	OpenDisplay();
+	CurrentDialogue->OpenDialogueAt(NodeID, this, InSpeakers);
+	OnDialogueStarted.Broadcast();
+}
+
+void ADialogueController::StartDialogueAt(UDialogue* InDialogue, FName NodeID, TArray<UDialogueSpeakerComponent*> InSpeakers)
+{
+	if (InSpeakers.IsEmpty())
+	{
+		UE_LOG(
+			LogDialogueTree,
+			Warning,
+			TEXT("No speakers provided on dialogue start.")
+		);
+		return;
+	}
+
+	TMap<FName, UDialogueSpeakerComponent*> TargetSpeakers;
+	for (UDialogueSpeakerComponent* Speaker : InSpeakers)
+	{
+		if (Speaker == nullptr)
+		{
+			UE_LOG(
+				LogDialogueTree,
+				Error,
+				TEXT("Could not start dialogue. Invalid speaker provided.")
+			);
+			return;
+		}
+
+		if (Speaker->GetDialogueName().IsNone())
+		{
+			UE_LOG(
+				LogDialogueTree,
+				Error,
+				TEXT("Could not start dialogue. A provided speaker has an"
+					" unfilled DialogueName.")
+			);
+			return;
+		}
+
+		if (!InDialogue->HasNode(NodeID))
+		{
+			UE_LOG(
+				LogDialogueTree,
+				Error,
+				TEXT("Could not start dialogue from Node: %s. No such node exists."),
+				*NodeID.ToString()
+			);
+			return;
+		}
+
+		if (TargetSpeakers.Contains(Speaker->GetDialogueName()))
+		{
+			UE_LOG(
+				LogDialogueTree,
+				Error,
+				TEXT("Could not start dialogue. Multiple provided speakers "
+					"share a DialogueName.")
+			);
+			return;
+		}
+
+		TargetSpeakers.Add(Speaker->GetDialogueName(), Speaker);
+	}
+
+	StartDialogueWithNamesAt(InDialogue, NodeID, TargetSpeakers);
 }
 
 void ADialogueController::EndDialogue()
@@ -128,7 +254,7 @@ void ADialogueController::EndDialogue()
 			if (Entry.Value)
 			{
 				Entry.Value->Stop();
-				Entry.Value->ClearBehaviorFlags();
+				Entry.Value->ClearGameplayTags();
 			}
 		}
 
@@ -153,7 +279,7 @@ void ADialogueController::ClearNodeVisits()
 	}
 }
 
-void ADialogueController::SetSpeaker(FName InName, 
+void ADialogueController::SetSpeaker(FName InName,
 	UDialogueSpeakerComponent* InSpeaker)
 {
 	if (CurrentDialogue && InSpeaker)
@@ -204,7 +330,7 @@ bool ADialogueController::SpeakerInCurrentDialogue(UDialogueSpeakerComponent* Ta
 	return false;
 }
 
-void ADialogueController::MarkNodeVisited(UDialogue* TargetDialogue, int32 TargetNodeIndex)
+void ADialogueController::MarkNodeVisited(UDialogue* TargetDialogue, FName TargetNodeID)
 {
 	if (!TargetDialogue)
 	{
@@ -228,12 +354,12 @@ void ADialogueController::MarkNodeVisited(UDialogue* TargetDialogue, int32 Targe
 	}
 
 	//Mark the node visited in the record 
-	DialogueRecords.Records[TargetDialogueName].VisitedNodeIndices.Add(
-		TargetNodeIndex
+	DialogueRecords.Records[TargetDialogueName].VisitedNodeIDs.Add(
+		TargetNodeID
 	);
 }
 
-void ADialogueController::MarkNodeUnvisited(UDialogue* TargetDialogue, int32 TargetNodeIndex)
+void ADialogueController::MarkNodeUnvisited(UDialogue* TargetDialogue, FName TargetNodeID)
 {
 	if (!TargetDialogue)
 	{
@@ -249,8 +375,8 @@ void ADialogueController::MarkNodeUnvisited(UDialogue* TargetDialogue, int32 Tar
 	}
 
 	//If there is a record, remove the target index from the visited nodes
-	DialogueRecords.Records[TargetDialogueName].VisitedNodeIndices.Remove(
-		TargetNodeIndex
+	DialogueRecords.Records[TargetDialogueName].VisitedNodeIDs.Remove(
+		TargetNodeID
 	);
 }
 
@@ -269,11 +395,11 @@ void ADialogueController::ClearAllNodeVisitsForDialogue(UDialogue* TargetDialogu
 		return;
 	}
 
-	DialogueRecords.Records[TargetDialogueName].VisitedNodeIndices.Empty();
+	DialogueRecords.Records[TargetDialogueName].VisitedNodeIDs.Empty();
 }
 
-bool ADialogueController::WasNodeVisited(const UDialogue* TargetDialogue, 
-	int32 TargetNodeIndex) const
+bool ADialogueController::WasNodeVisited(const UDialogue* TargetDialogue,
+	FName TargetNodeID) const
 {
 	if (!TargetDialogue)
 	{
@@ -287,8 +413,26 @@ bool ADialogueController::WasNodeVisited(const UDialogue* TargetDialogue,
 		return false;
 	}
 
-	FDialogueNodeVisits TargetRecord = 
+	FDialogueNodeVisits TargetRecord =
 		DialogueRecords.Records[TargetDialogueName];
 
-	return TargetRecord.VisitedNodeIndices.Contains(TargetNodeIndex);
+	return TargetRecord.VisitedNodeIDs.Contains(TargetNodeID);
+}
+
+void ADialogueController::SetResumeNode(UDialogue* InDialogue, FName InNodeID)
+{
+	if (!InDialogue || InNodeID.IsNone())
+	{
+		return;
+	}
+
+	//Ensure there is a record
+	FName RecordName = InDialogue->GetFName();
+	if (!DialogueRecords.Records.Contains(RecordName))
+	{
+		DialogueRecords.Records.Add(RecordName);
+	}
+
+	//Set the record's resume node 
+	DialogueRecords.Records[RecordName].ResumeNodeID = InNodeID;
 }

@@ -85,21 +85,19 @@ FText FDialogueSpeakerSocketCustomization::GetButtonTooltip() const
 
 void FDialogueSpeakerSocketCustomization::SetUpPropertyChangeEvent(TSharedRef<IPropertyHandle> PropertyHandle)
 {
-	//Todo: Can I replace this with a blanket version on all nodes? UObject has something like this...
-
 	if (!TargetGraph.IsValid() || !PropertyHandle->IsValidHandle())
 	{
 		return;
 	}
 
 	//Set up the property change event to refresh node visuals
-	UDialogueEdGraph* TargetGraphPtr = TargetGraph.Get();
+	UGraphNodeDialogue* TargetGraphNodePtr = TargetGraphNode.Get();
 	PropertyHandle->SetOnPropertyValueChanged(FSimpleDelegate::CreateLambda(
-		[TargetGraphPtr]()
+		[TargetGraphNodePtr]()
 		{
-			if (TargetGraphPtr)
+			if (TargetGraphNodePtr)
 			{
-				TargetGraphPtr->UpdateAllNodeVisuals();
+				TargetGraphNodePtr->UpdateDialogueNode();
 			}
 		}
 	));
@@ -123,7 +121,7 @@ void FDialogueSpeakerSocketCustomization::SetSelection(UObject* InSelection)
 	}
 
 	TargetProperty->SetValue(SelectedSpeaker);
-	RefreshDetailsView();
+	RefreshEditor();
 }
 
 bool FDialogueSpeakerSocketCustomization::HasPrerequisites() const

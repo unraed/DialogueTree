@@ -134,6 +134,12 @@ public:
 	virtual void CreateAssetNode(class UDialogue* InAsset) {};
 
 	/**
+	* Called after creating the asset node. Assigns the unique node ID that 
+	* corrsponds to the node. 
+	*/
+	void AssignAssetNodeID() const;
+
+	/**
 	* Virtual. Performs last touches on the asset node after all asset nodes
 	* have been created and linked together. 
 	*/
@@ -229,7 +235,7 @@ private:
 private:
 	/** The asset node associated with the graph node */
 	UPROPERTY()
-	UDialogueNode* AssetNode = nullptr;
+	TObjectPtr<UDialogueNode> AssetNode = nullptr;
 	
 	/** A flag indicating that the node has a compilation error */
 	UPROPERTY()
@@ -237,7 +243,7 @@ private:
 
 	/** The dialogue graph this node exists within */
 	UPROPERTY()
-	UDialogueEdGraph* DialogueGraph;
+	TObjectPtr<UDialogueEdGraph> DialogueGraph;
 
 	/** The ID of the node within the graph */
 	UPROPERTY()

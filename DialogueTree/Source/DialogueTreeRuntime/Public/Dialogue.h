@@ -40,7 +40,7 @@ struct FSpeakerField
 	GENERATED_BODY()
 
 	UPROPERTY(NoClear, meta=(NoResetToDefault))
-	UDialogueSpeakerSocket* SpeakerSocket = nullptr;
+	TObjectPtr<UDialogueSpeakerSocket> SpeakerSocket = nullptr;
 
 	UPROPERTY(EditAnywhere, NoClear, Category = "Dialogue", 
 		meta=(NoResetToDefault))
@@ -146,14 +146,15 @@ public:
 	void AddSpeakerEntry(FName InName);
 
 	/**
-	* Opens the dialogue. 
+	* Opens the dialogue at the given node ID. 
 	* 
+	* @param InNodeID - FName, the target node to start at. 
 	* @param InController - ADialogueController*, DialogueController
 	* actor. 
 	* @param InSpeakers - TMap<FName, UDialogueSpeakerComponent*>, 
 	* components to associate with expected speaker names. 
 	*/
-	void OpenDialogue(ADialogueController* InController, 
+	void OpenDialogueAt(FName InNodeID, ADialogueController* InController,
 		TMap<FName, UDialogueSpeakerComponent*> InSpeakers);
 
 	/**
@@ -254,6 +255,28 @@ public:
 	*/
 	void ClearAllNodeVisits();
 
+	/**
+	* Checks if the given node ID corresponds to a node in the dialogue. 
+	* 
+	* @param NodeID - FName, the target node id. 
+	* @return True if the dialogue contains the node, False otherwise.
+	*/
+	bool HasNode(FName NodeID) const;
+
+	/**
+	* Marks the given node as the dialogue's resume node if possible.
+	* 
+	* @param InNode - UDialogueNode* - the node to resume from. 
+	*/
+	void SetResumeNode(UDialogueNode* InNode);
+
+	/**
+	* Retrieves the dialogue's root node.
+	*
+	* @return UDialogueNode*, the root of the dialogue.
+	*/
+	UDialogueNode* GetRootNode() const;
+
 #if WITH_EDITOR
 public:
 	/**
@@ -262,6 +285,15 @@ public:
 	* @return UEdGraph*, the editor graph for the dialogue. 
 	*/
 	UEdGraph* GetEdGraph() const;
+
+	/**
+	* Retrieve the editor graph associated with this dialogue if loaded. If 
+	* unloaded will simply return nullptr. Used when dealing with garbage 
+	* collector.
+	*
+	* @return UEdGraph*, the editor graph for the dialogue if loaded.
+	*/
+	UEdGraph* GetEdGraphIfLoaded() const;
 
 	/**
 	* Set the editor graph associated with this dialogue. 
@@ -299,13 +331,6 @@ public:
 	void SetRootNode(UDialogueNode* InNode);
 
 	/**
-	* Retrieves the dialogue's root node. 
-	* 
-	* @return UDialogueNode*, the root of the dialogue. 
-	*/
-	UDialogueNode* GetRootNode() const;
-
-	/**
 	* Completely empties the current dialogue of all of its nodes, 
 	* rendering it blank. 
 	*/
@@ -315,11 +340,6 @@ public:
 	* Functionality to call at the beginning of compiling the dialogue.
 	*/
 	void PreCompileDialogue();
-
-	/**
-	* Functionality to call after successfully compiling the dialogue. 
-	*/
-	void PostCompileDialogue();
 
 	/**
 	* Sets the compile status for the dialogue. Only a status of
@@ -388,23 +408,24 @@ private:
 
 	/** The list of all nodes in the dialogue */
 	UPROPERTY()
-	TArray<UDialogueNode*> DialogueNodes;
+	//TArray<UDialogueNode*> DialogueNodes;
+	TMap<FName, TObjectPtr<UDialogueNode>> DialogueNodes;
 
 	/** The entry node for the dialogue */
 	UPROPERTY()
-	UDialogueEntryNode* RootNode; 
+	TObjectPtr<UDialogueEntryNode> RootNode; 
 
 	/** The currently active node in the dialogue */
 	UPROPERTY()
-	UDialogueNode* ActiveNode;
+	TObjectPtr<UDialogueNode> ActiveNode;
 
 	/** A mapping of speaker names to their found components */
 	UPROPERTY()
-	TMap<FName, UDialogueSpeakerComponent*> Speakers;
+	TMap<FName, TObjectPtr<UDialogueSpeakerComponent>> Speakers;
 
 	/** The controlling actor for the dialogue */
 	UPROPERTY()
-	ADialogueController* DialogueController;
+	TObjectPtr<ADialogueController> DialogueController;
 
 	/** Thhe current compile status of the dialogue */
 	UPROPERTY()
@@ -418,7 +439,7 @@ private:
 
 	/** The editor graph associated with this dialogue */
 	UPROPERTY()
-	UEdGraph* EdGraph = nullptr;
+	TSoftObjectPtr<UEdGraph> EdGraph = nullptr;
 
 #endif
 

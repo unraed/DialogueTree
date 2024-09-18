@@ -7,6 +7,8 @@
 //Generated
 #include "PickableDialogueNode.generated.h"
 
+class UGraphNodeDialogue;
+
 /**
 * Struct serving as a data container for dialogue graph nodes which 
 * we want to select from within the dialogue graph. 
@@ -17,5 +19,5 @@ struct FPickableDialogueNode
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, Category = "Dialogue")
-	class UGraphNodeDialogue* Node;
+	TObjectPtr<UGraphNodeDialogue> Node;
 };

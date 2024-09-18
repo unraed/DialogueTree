@@ -7,6 +7,8 @@
 //Generated
 #include "PickableDialogueSpeaker.generated.h"
 
+class UDialogueSpeakerSocket;
+
 /**
 * Struct serving as a data container for speaker sockets that 
 * can be selected from the dialogue graph. 
@@ -17,5 +19,5 @@ struct FPickableDialogueSpeaker
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, Category = "Dialogue")
-	class UDialogueSpeakerSocket* Speaker;
+	TObjectPtr<UDialogueSpeakerSocket> Speaker;
 };

@@ -6,18 +6,27 @@
 #include "Components/AudioComponent.h"
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
+//Plugin
+#include "SpeechDetails.h"
 //Generated
 #include "DialogueSpeakerComponent.generated.h"
 
 class ADialogueController;
 
 /**
-* Delegate used to pass data about behavior flag changes. 
+* Delegate used to pass data about gameplay tag changes. 
 */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(
-	FOnBehaviorFlagsChanged,
+	FOnDialogueGameplayTagsChanged,
 	FGameplayTagContainer,
-	InFlags
+	InTags
+);
+
+/** Delegate used to pass data about speeches that are played */
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(
+	FSpeakerSpeechSignature,
+	FSpeechDetails,
+	InSpeechDetails
 );
 
 /**
@@ -31,11 +40,11 @@ struct FSpeakerActorEntry
 
 	/** The actor which owns the speaker component */
 	UPROPERTY(BlueprintReadOnly, Category="Dialogue")
-	AActor* Actor = nullptr;
+	TObjectPtr<AActor> Actor = nullptr;
 
 	/** The speaker component under consideration */
 	UPROPERTY(BlueprintReadOnly, Category = "Dialogue")
-	UDialogueSpeakerComponent* SpeakerComponent = nullptr;
+	TObjectPtr<UDialogueSpeakerComponent> SpeakerComponent = nullptr;
 };
 
 /**
@@ -109,13 +118,13 @@ public:
 	UDialogue* GetOwnedDialogue();
 
 	/**
-	* Gets gameplay tag container marking behavior flags for any ongoing 
+	* Gets gameplay tag container marking tags for any ongoing 
 	* speech. 
 	* 
 	* @return FGameplayTagContainer
 	*/
 	UFUNCTION(BlueprintPure, Category="Dialogue")
-	FGameplayTagContainer GetBehaviorFlags();
+	FGameplayTagContainer GetCurrentGameplayTags();
 
 	/**
 	* Ends the dialogue the speaker is currently participating in, if 
@@ -125,24 +134,35 @@ public:
 	void EndCurrentDialogue();
 
 	/**
-	* Attempts to skip the current speech that is playing. Does nothing if the 
-	* speaker component is not engaged in dialogue. 
+	* Attempts to skip the current speech that is playing. Does nothing
+	* if the speaker component is not engaged in dialogue. 
 	*/
 	UFUNCTION(BlueprintCallable, Category="Dialogue")
 	void TrySkipSpeech();
 
 	/**
-	* Changes out the speaker's current behavior flags to the 
-	* provided set. Primarily meant to be called from dialogue side.
+	* Plays the given audio clip. Exposed to blueprint to be
+	* user-overridable. 
 	* 
-	* @param InTags - FGameplayTagContainer, the new flags to set. 
+	* @param InAudio - USoundBase*, the audio clip. 
 	*/
-	void SetBehaviorFlags(FGameplayTagContainer InTags);
+	UFUNCTION(BlueprintNativeEvent, Category="Dialogue")
+	void PlaySpeechAudioClip(USoundBase* InAudio);
+	virtual void PlaySpeechAudioClip_Implementation(
+		USoundBase* InAudio);
 
 	/**
-	* Clears the behavior flags. 
+	* Changes out the speaker's current gameplay tags to the 
+	* provided set. Primarily meant to be called from dialogue side.
+	* 
+	* @param InTags - FGameplayTagContainer, the new tags to set. 
 	*/
-	void ClearBehaviorFlags();
+	void SetCurrentGameplayTags(FGameplayTagContainer InTags);
+
+	/**
+	* Clears the gameplay tags. 
+	*/
+	void ClearGameplayTags();
 
 	/**
 	* Starts the default dialogue for this speaker component. Uses the provided
@@ -150,10 +170,13 @@ public:
 	* 
 	* @param InSpeakers - TMap<FName, UDialogueSpeakerComponent*>,
 	* the speaker components to pass to the dialogue. 
+	* @param bResume - bool - If true, the dialogue will resume from the marked
+	* resume node (if any). If false, the dialogue will start over.
 	*/
 	UFUNCTION(BlueprintCallable, Category = "Dialogue")
 	void StartOwnedDialogueWithNames(
-		TMap<FName, UDialogueSpeakerComponent*> InSpeakers);
+		TMap<FName, UDialogueSpeakerComponent*> InSpeakers, 
+		bool bResume = false);
 
 	/**
 	* Starts the default dialogue for this speaker component. Attempts to 
@@ -162,9 +185,12 @@ public:
 	* 
 	* @param InSpeakers - TArray<UDialogueSpeakerComponent*>, the conversing 
 	* speakers. 
+	* @param bResume - bool - If true, the dialogue will resume from the marked
+	* resume node (if any). If false, the dialogue will start over.
 	*/
 	UFUNCTION(BlueprintCallable, Category = "Dialogue")
-	void StartOwnedDialogue(TArray<UDialogueSpeakerComponent*> InSpeakers);
+	void StartOwnedDialogue(TArray<UDialogueSpeakerComponent*> InSpeakers, 
+		bool bResume = false);
 
 	/**
 	* Starts the given dialogue. Uses the provided name-speaker pairings for
@@ -173,10 +199,13 @@ public:
 	* @param InDialogue - UDialogue*, the dialogue to start. 
 	* @param InSpeakers - TMap<FName, UDialogueSpeakerComponent*>,
 	* the speaker components to pass to the dialogue. 
+	* @param bResume - bool - If true, the dialogue will resume from the marked
+	* resume node (if any). If false, the dialogue will start over.
 	*/
 	UFUNCTION(BlueprintCallable, Category = "Dialogue")
 	void StartDialogueWithNames(UDialogue* InDialogue, 
-		TMap<FName, UDialogueSpeakerComponent*> InSpeakers);
+		TMap<FName, UDialogueSpeakerComponent*> InSpeakers,
+		bool bResume = false);
 
 	/**
 	* Starts the given dialogue. Uses the provided speakers' dialogue names 
@@ -186,16 +215,78 @@ public:
 	* @param InDialogue - UDialogue*, the dialogue to start. 
 	* @param InSpeakers - TArray<UDialogueSpeakerComponent*> the conversing
 	* speakers. 
+	* @param bResume - bool - If true, the dialogue will resume from the marked
+	* resume node (if any). If false, the dialogue will start over.
 	*/
 	UFUNCTION(BlueprintCallable, Category = "Dialogue")
 	void StartDialogue(UDialogue* InDialogue, 
+		TArray<UDialogueSpeakerComponent*> InSpeakers, bool bResume = false);
+
+	/**
+	* Starts the default dialogue for this speaker component at the given 
+	* NodeID location. Uses the provided name-speaker pairings for matching 
+	* with target dialogue.
+	*
+	* @param InNodeID - FName, the target node ID to start at. 
+	* @param InSpeakers - TMap<FName, UDialogueSpeakerComponent*>,
+	* the speaker components to pass to the dialogue.
+	*/
+	UFUNCTION(BlueprintCallable, Category = "Dialogue")
+	void StartOwnedDialogueWithNamesAt(FName InNodeID, 
+		TMap<FName, UDialogueSpeakerComponent*> InSpeakers);
+
+	/**
+	* Starts the default dialogue for this speaker component at the given node 
+	* ID. Attempts to match the provided speaker's dialogue names to those 
+	* expected by the dialogue. Duplicate or unfilled names not allowed.
+	*
+	* @param InNodeID - FName, the target node to start at. 
+	* @param InSpeakers - TArray<UDialogueSpeakerComponent*>, the conversing
+	* speakers.
+	*/
+	UFUNCTION(BlueprintCallable, Category = "Dialogue")
+	void StartOwnedDialogueAt(FName InNodeID, 
+		TArray<UDialogueSpeakerComponent*> InSpeakers);
+
+	/**
+	* Starts the given dialogue at the given node ID. Uses the provided 
+	* name-speaker pairings for matching with target dialogue.
+	*
+	* @param InDialogue - UDialogue*, the dialogue to start.
+	* @param InNodeID - FName, the target node to start at. 
+	* @param InSpeakers - TMap<FName, UDialogueSpeakerComponent*>,
+	* the speaker components to pass to the dialogue.
+	*/
+	UFUNCTION(BlueprintCallable, Category = "Dialogue")
+	void StartDialogueWithNamesAt(UDialogue* InDialogue, FName InNodeID,
+		TMap<FName, UDialogueSpeakerComponent*> InSpeakers);
+
+	/**
+	* Starts the given dialogue at the given node ID. Uses the provided 
+	* speakers' dialogue names for matching with target dialogue. Duplicate 
+	* or unfilled dialogue names not allowed.
+	*
+	* @param InNodeID - FName, the target node to start at. 
+	* @param InDialogue - UDialogue*, the dialogue to start.
+	* @param InSpeakers - TArray<UDialogueSpeakerComponent*> the conversing
+	* speakers.
+	*/
+	UFUNCTION(BlueprintCallable, Category = "Dialogue")
+	void StartDialogueAt(UDialogue* InDialogue, FName InNodeID,
 		TArray<UDialogueSpeakerComponent*> InSpeakers);
 
 public:
 	FSpeakerActorEntry ToSpeakerActorEntry();
 
+	/**
+	* Notifies subscribers that the given speech was skipped.
+	* 
+	* @param SkippedSpeech - FSpeechDetails, the skipped speech. 
+	*/
+	void BroadcastSpeechSkipped(FSpeechDetails SkippedSpeech);
+
 private:
-	void BroadcastBehaviorFlags();
+	void BroadcastCurrentGameplayTags();
 
 protected:
 	/** The name to display for this speaker in dialogue */
@@ -208,20 +299,27 @@ protected:
 
 	/** The default dialogue to start when initiating dialogue */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dialogue")
-	UDialogue* OwnedDialogue;
+	TObjectPtr<UDialogue> OwnedDialogue;
 
-	/** Flags associated with a speech in dialogue. Used for animation, etc. 
+	/** Tags associated with a speech in dialogue. Used for animation, etc. 
 	* Set up as maps for ease of access and greater flexibility. */
 	UPROPERTY(BlueprintReadOnly, Category = "Dialogue", 
 		meta = (AllowPrivateAccess = true))
-	FGameplayTagContainer BehaviorFlags;
+	FGameplayTagContainer GameplayTags;
 
 public:
 	/** Currently active dialogue controller */
 	UPROPERTY(BlueprintReadOnly, Category="Dialogue")
-	ADialogueController* DialogueController;
+	TObjectPtr<ADialogueController> DialogueController;
 
-	/** Delegate used to let others know when behavior flags change */
+	/** Delegate used to let others know when gameplay tags change */
 	UPROPERTY(BlueprintAssignable, Category = "Dialogue")
-	FOnBehaviorFlagsChanged OnBehaviorFlagsChanged;
+	FOnDialogueGameplayTagsChanged OnGameplayTagsChanged;
+
+	/** 
+	* Delegate used to let others know when this speaker's speech
+	* was skipped. 
+	*/
+	UPROPERTY(BlueprintAssignable, Category = "Dialogue")
+	FSpeakerSpeechSignature OnSpeechSkipped;
 };

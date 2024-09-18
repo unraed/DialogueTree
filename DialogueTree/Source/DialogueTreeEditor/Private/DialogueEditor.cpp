@@ -21,6 +21,7 @@
 #include "Graph/DialogueEdGraphSchema.h"
 #include "Graph/Nodes/GraphNodeDialogue.h"
 #include "Graph/Slate/SDialogueGraphEditor.h"
+#include "LogDialogueTree.h"
 #include "Nodes/DialogueNode.h"
 
 #define LOCTEXT_NAMESPACE "DialogueEditor"
@@ -147,7 +148,7 @@ bool FDialogueEditor::OnRequestClose()
 void FDialogueEditor::AddReferencedObjects(FReferenceCollector& Collector)
 {
     check(TargetDialogue);
-    UEdGraph* TargetGraph = TargetDialogue->GetEdGraph();
+    UEdGraph* TargetGraph = TargetDialogue->GetEdGraphIfLoaded();
     check(TargetGraph);
 
     Collector.AddReferencedObject(TargetDialogue);
@@ -212,6 +213,12 @@ void FDialogueEditor::CreateEdGraph()
 {   
     if (!TargetDialogue->GetEdGraph())
     {
+        UE_LOG(
+            LogDialogueTree,
+            Warning,
+            TEXT("No dialogue graph found. Creating a new graph. If this is the first time you open the dialogue asset you can ignore this message.")
+        );
+
         //Create the ed graph
         UEdGraph* NewGraph = FBlueprintEditorUtils::CreateNewGraph(
             TargetDialogue,

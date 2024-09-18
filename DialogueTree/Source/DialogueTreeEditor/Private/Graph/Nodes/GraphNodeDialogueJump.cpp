@@ -45,7 +45,6 @@ void UGraphNodeDialogueJump::CreateAssetNode(UDialogue* InAsset)
     check(NewNode);
 
     SetAssetNode(NewNode);
-    InAsset->AddNode(NewNode);
 }
 
 void UGraphNodeDialogueJump::FinalizeAssetNode()

@@ -77,9 +77,6 @@ void UGraphNodeDialogueEvent::CreateAssetNode(UDialogue* InAsset)
 
 	//Store the completed node as the asset node 
 	SetAssetNode(NewNode);
-
-	//Add to the target dialogue. 
-	InAsset->AddNode(NewNode);
 }
 
 void UGraphNodeDialogueEvent::FinalizeAssetNode()
@@ -159,6 +156,11 @@ TArray<FText> UGraphNodeDialogueEvent::GetGraphDescriptions() const
 	}
 
 	return EventTexts;
+}
+
+int UGraphNodeDialogueEvent::GetNumEvents() const
+{
+	return Events.Num();
 }
 
 void UGraphNodeDialogueEvent::FinalizeNodeSocket(UDialogueEventBase* InEvent)

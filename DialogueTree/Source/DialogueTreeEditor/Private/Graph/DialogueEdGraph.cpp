@@ -155,11 +155,11 @@ void UDialogueEdGraph::CompileAsset()
 
 	//Compile asset tree
 	CreateAssetNodes(Asset);
-	UpdateAssetTreeRecursive(Root);
+	TSet<UGraphNodeDialogue*> VisitedNodes;
+	UpdateAssetTreeRecursive(Root, VisitedNodes);
 	FinalizeAssetNodes();
 
 	//Mark compilation as successful 
-	Asset->PostCompileDialogue();
 	Asset->SetCompileStatus(EDialogueCompileStatus::Compiled);
 }
 
@@ -208,6 +208,8 @@ void UDialogueEdGraph::CreateAssetNodes(UDialogue* InAsset)
 	{
 		check(Entry.Value);
 		Entry.Value->CreateAssetNode(InAsset);
+		Entry.Value->AssignAssetNodeID();
+		InAsset->AddNode(Entry.Value->GetAssetNode());
 	}
 }
 
@@ -220,9 +222,19 @@ void UDialogueEdGraph::FinalizeAssetNodes()
 	}
 }
 
-void UDialogueEdGraph::UpdateAssetTreeRecursive (UGraphNodeDialogue* InRoot)
+void UDialogueEdGraph::UpdateAssetTreeRecursive(UGraphNodeDialogue* InRoot,
+	TSet<UGraphNodeDialogue*> VisitedNodes)
 {
 	check(InRoot);
+
+	if (VisitedNodes.Contains(InRoot))
+	{
+		return;
+	}
+	else
+	{
+		VisitedNodes.Add(InRoot);
+	}
 
 	//Link the asset root to its parents
 	InRoot->LinkAssetNode();
@@ -235,7 +247,7 @@ void UDialogueEdGraph::UpdateAssetTreeRecursive (UGraphNodeDialogue* InRoot)
 	//Recur over children
 	for (UGraphNodeDialogue* Child : OutChildren)
 	{
-		UpdateAssetTreeRecursive(Child);
+		UpdateAssetTreeRecursive(Child, VisitedNodes);
 	}
 }
 

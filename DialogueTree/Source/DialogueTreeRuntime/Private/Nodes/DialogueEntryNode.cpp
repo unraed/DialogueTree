@@ -22,6 +22,7 @@ void UDialogueEntryNode::EnterNode()
 			TEXT("Exiting dialogue: Entry node has no children...")
 		);
 		Dialogue->EndDialogue();
+		return;
 	}
 
 	//Otherwise, get first (only) child and enter that node 

@@ -8,24 +8,11 @@
 
 void UDialogueEventNode::EnterNode()
 {
-	//Call super
-	Super::EnterNode();
-
 	//Play all events
-	for (UDialogueEventBase* Event : Events)
-	{
-		Event->PlayEvent();
-	}
+	PlayEvents();
 
-	//Trigger the next node in line
-	if (!Children.IsEmpty())
-	{
-		Dialogue->TraverseNode(Children[0]);
-	}
-	else
-	{
-		Dialogue->EndDialogue();
-	}
+	//Trigger the next node in line if no event is blocking
+	TransitionIfNotBlocking();
 }
 
 FDialogueOption UDialogueEventNode::GetAsOption()
@@ -39,15 +26,60 @@ FDialogueOption UDialogueEventNode::GetAsOption()
 	return FDialogueOption();
 }
 
+void UDialogueEventNode::Skip()
+{
+	for (UDialogueEventBase* Event : Events)
+	{
+		Event->OnSkipped();
+	}
+}
+
 void UDialogueEventNode::SetEvents(TArray<UDialogueEventBase*>& InEvents)
 {
 	Events = InEvents;
+}
+
+bool UDialogueEventNode::GetIsBlocking() const
+{
+	for (UDialogueEventBase* Event : Events)
+	{
+		if (Event->GetIsBlocking())
+		{
+			return true;
+		}
+	}
+
+	return false;
 }
 
 void UDialogueEventNode::PlayEvents()
 {
 	for (UDialogueEventBase* Event : Events)
 	{
+		// Subscribe to the event's callback for stopping blocking
+		Event->OnStoppedBlocking.BindUFunction(
+			this,
+			"TransitionIfNotBlocking"
+		);
+
+		// Play the event
 		Event->PlayEvent();
+	}
+}
+
+void UDialogueEventNode::TransitionIfNotBlocking() const
+{
+	if (GetIsBlocking())
+	{
+		return;
+	}
+
+	if (!Children.IsEmpty())
+	{
+		Dialogue->TraverseNode(Children[0]);
+	}
+	else
+	{
+		Dialogue->EndDialogue();
 	}
 }

@@ -50,7 +50,8 @@ void UDialogueManagerSubsystem::OnWorldBeginPlay(UWorld& InWorld)
 	//Attempt to load controller type
 	if (DLGSettings)
 	{
-		ControllerType = DLGSettings->DialogueControllerType;
+		ControllerType = 
+			DLGSettings->DialogueControllerType.LoadSynchronous();
 	}
 
 	//Attempt to spawn controller

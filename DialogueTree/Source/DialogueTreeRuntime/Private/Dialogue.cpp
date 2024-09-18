@@ -35,7 +35,7 @@ void UDialogue::PostEditChangeProperty(
 	Super::PostEditChangeProperty(PropertyChangedEvent);
 
 	FName PropertyName = PropertyChangedEvent.GetMemberPropertyName();
-	
+
 	//If editing the speaker roles
 	if (PropertyName.IsEqual("SpeakerRoles"))
 	{
@@ -71,8 +71,7 @@ void UDialogue::AddSpeakerEntry(FName InName)
 	}
 }
 
-void UDialogue::OpenDialogue(ADialogueController* InController, TMap<FName,
-	UDialogueSpeakerComponent*> InSpeakers)
+void UDialogue::OpenDialogueAt(FName InNodeID, ADialogueController* InController, TMap<FName, UDialogueSpeakerComponent*> InSpeakers)
 {
 	//Make sure we can start the dialogue 
 	FString ErrorMessage;
@@ -87,6 +86,17 @@ void UDialogue::OpenDialogue(ADialogueController* InController, TMap<FName,
 		return;
 	}
 
+	if (!HasNode(InNodeID))
+	{
+		UE_LOG(
+			LogDialogueTree,
+			Error,
+			TEXT("Cannot play dialogue starting from Node %s. No such node exists."),
+			*InNodeID.ToString()
+		);
+		return;
+	}
+
 	//Store the controller 
 	DialogueController = InController;
 
@@ -94,7 +104,9 @@ void UDialogue::OpenDialogue(ADialogueController* InController, TMap<FName,
 	FillSpeakers(InSpeakers);
 
 	//Traverse the first node 
-	TraverseNode(RootNode);
+	UDialogueNode* StartNode = DialogueNodes[InNodeID];
+	check(StartNode);
+	TraverseNode(StartNode);
 }
 
 void UDialogue::ClearController()
@@ -113,14 +125,14 @@ void UDialogue::EndDialogue() const
 
 void UDialogue::DisplaySpeech(const FSpeechDetails& InDetails) const
 {
-	if (!Speakers[InDetails.SpeakerName])
+	if (!Speakers[InDetails.SpeakerName] || !DialogueController)
 	{
 		EndDialogue();
 		return;
 	}
 
 	DialogueController->DisplaySpeech(
-		InDetails, 
+		InDetails,
 		Speakers[InDetails.SpeakerName]
 	);
 	DialogueController->OnDialogueSpeechDisplayed.Broadcast(InDetails);
@@ -166,20 +178,20 @@ void UDialogue::Skip() const
 void UDialogue::TraverseNode(UDialogueNode* InNode)
 {
 	//return if the dialogue is already closed
-	if (!DialogueController) 
+	if (!DialogueController)
 	{
 		return;
 	}
 
 	//If no node provided, end the dialogue
-	if (!InNode) 
+	if (!InNode)
 	{
 		EndDialogue();
 		return;
 	}
 
 	//Mark the node visited 
-	DialogueController->MarkNodeVisited(this, InNode->GetNodeIndex());
+	DialogueController->MarkNodeVisited(this, InNode->GetNodeID());
 
 	//Traverse the target node 
 	ActiveNode = InNode;
@@ -193,7 +205,13 @@ EDialogueCompileStatus UDialogue::GetCompileStatus() const
 
 TMap<FName, UDialogueSpeakerComponent*> UDialogue::GetAllSpeakers() const
 {
-	return Speakers;
+	//Have to manually copy to handle conversion from TObjectPtr
+	TMap<FName, UDialogueSpeakerComponent*> AllSpeakers;
+	for (auto& Speaker : Speakers)
+	{
+		AllSpeakers.Add(Speaker.Key, Speaker.Value);
+	}
+	return AllSpeakers;
 }
 
 bool UDialogue::SpeakerIsPresent(const FName SpeakerName) const
@@ -203,15 +221,15 @@ bool UDialogue::SpeakerIsPresent(const FName SpeakerName) const
 
 bool UDialogue::WasNodeVisited(UDialogueNode* TargetNode) const
 {
-	if (!DialogueController || !TargetNode 
-		|| !DialogueNodes.Contains(TargetNode))
+	if (!DialogueController || !TargetNode
+		|| !DialogueNodes.Contains(TargetNode->GetNodeID()))
 	{
 		return false;
 	}
 
 	return DialogueController->WasNodeVisited(
-		this, 
-		TargetNode->GetNodeIndex()
+		this,
+		TargetNode->GetNodeID()
 	);
 }
 
@@ -225,15 +243,15 @@ void UDialogue::MarkNodeVisited(UDialogueNode* TargetNode, bool bVisited)
 	if (bVisited)
 	{
 		DialogueController->MarkNodeVisited(
-			this, 
-			TargetNode->GetNodeIndex()
+			this,
+			TargetNode->GetNodeID()
 		);
 	}
 	else
 	{
 		DialogueController->MarkNodeUnvisited(
 			this,
-			TargetNode->GetNodeIndex()
+			TargetNode->GetNodeID()
 		);
 	}
 }
@@ -248,11 +266,35 @@ void UDialogue::ClearAllNodeVisits()
 	DialogueController->ClearAllNodeVisitsForDialogue(this);
 }
 
+bool UDialogue::HasNode(FName NodeID) const
+{
+	return DialogueNodes.Contains(NodeID);
+}
+
+void UDialogue::SetResumeNode(UDialogueNode* InNode)
+{
+	if (InNode && DialogueNodes.Contains(InNode->GetNodeID())
+		&& DialogueController)
+	{
+		DialogueController->SetResumeNode(this, InNode->GetNodeID());
+	}
+}
+
+UDialogueNode* UDialogue::GetRootNode() const
+{
+	return RootNode;
+}
+
 #if WITH_EDITOR
 
 UEdGraph* UDialogue::GetEdGraph() const
 {
-	return EdGraph;
+	return EdGraph.LoadSynchronous();
+}
+
+UEdGraph* UDialogue::GetEdGraphIfLoaded() const
+{
+	return EdGraph.Get();
 }
 
 void UDialogue::SetEdGraph(UEdGraph* InEdGraph)
@@ -268,8 +310,8 @@ const TMap<FName, FSpeakerField>& UDialogue::GetSpeakerRoles() const
 void UDialogue::AddNode(UDialogueNode* InNode)
 {
 	if (InNode)
-	{ 
-		DialogueNodes.Add(InNode);
+	{
+		DialogueNodes.Add(InNode->GetNodeID(), InNode);
 		InNode->SetDialogue(this);
 	}
 }
@@ -278,22 +320,17 @@ void UDialogue::RemoveNode(UDialogueNode* InNode)
 {
 	if (InNode)
 	{
-		DialogueNodes.Remove(InNode);
+		DialogueNodes.Remove(InNode->GetNodeID());
 	}
 }
 
 void UDialogue::SetRootNode(UDialogueNode* InNode)
 {
-	if (UDialogueEntryNode* EntryNode 
+	if (UDialogueEntryNode* EntryNode
 		= Cast<UDialogueEntryNode>(InNode))
 	{
 		RootNode = EntryNode;
 	}
-}
-
-UDialogueNode* UDialogue::GetRootNode() const
-{
-	return RootNode;
 }
 
 void UDialogue::ClearDialogue()
@@ -312,15 +349,6 @@ void UDialogue::PreCompileDialogue()
 	for (auto& Entry : SpeakerRoles)
 	{
 		AddSpeakerEntry(Entry.Key);
-	}
-}
-
-void UDialogue::PostCompileDialogue()
-{
-	//Notify nodes of their indices in the dialogue
-	for (int32 NodeIndex = 0; NodeIndex < DialogueNodes.Num(); ++NodeIndex)
-	{
-		DialogueNodes[NodeIndex]->SetNodeIndex(NodeIndex);
 	}
 }
 
@@ -417,7 +445,7 @@ void UDialogue::OnChangeSingleSpeaker()
 	}
 }
 
-bool UDialogue::CanPlay(ADialogueController* InController, 
+bool UDialogue::CanPlay(ADialogueController* InController,
 	FString& OutErrorMessage) const
 {
 	if (CompileStatus != EDialogueCompileStatus::Compiled)

@@ -84,7 +84,6 @@ void UGraphNodeDialogueBranch::CreateAssetNode(UDialogue* InAsset)
         NewObject<UDialogueBranchNode>(InAsset);
 
     SetAssetNode(NewNode);
-    InAsset->AddNode(NewNode);
 }
 
 void UGraphNodeDialogueBranch::FinalizeAssetNode()

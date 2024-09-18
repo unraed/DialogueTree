@@ -109,7 +109,7 @@ private:
 
 	/** The list of conditions for the branch */
 	UPROPERTY(EditAnywhere, Category = "Dialogue")
-	TArray<UDialogueGraphCondition*> Conditions; 
+	TArray<TObjectPtr<UDialogueGraphCondition>> Conditions; 
 
 	/** Constants */
 	const int32 INVALID_PIN_INDEX = 3;

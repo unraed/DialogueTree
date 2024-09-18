@@ -101,6 +101,11 @@ void UDialogueTransition::Skip()
 	{
 		OnMinPlayTimeElapsed();
 	}
+
+	//Let the speaker know we are skipping its speech
+	OwningNode->GetSpeaker()->BroadcastSpeechSkipped(
+		OwningNode->GetDetails()
+	);
 }
 
 FText UDialogueTransition::GetDisplayName() const
@@ -120,7 +125,7 @@ EDialogueConnectionLimit UDialogueTransition::GetConnectionLimit() const
 
 void UDialogueTransition::CheckTransitionConditions()
 {
-	if (bAudioFinished && bMinPlayTimeElapsed)
+	if (bAudioFinished && bMinPlayTimeElapsed && !OwningNode->GetIsBlocking())
 	{
 		TransitionOut();
 	}

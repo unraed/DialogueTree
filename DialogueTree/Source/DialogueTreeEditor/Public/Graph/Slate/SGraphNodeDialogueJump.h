@@ -36,7 +36,7 @@ private:
 
 private:
 	/** Cached Jump Node */
-	UGraphNodeDialogueJump* JumpNode;
+	TObjectPtr<UGraphNodeDialogueJump> JumpNode;
 
 	/** Constants */
 	float CONTENT_PADDING = 10.f;

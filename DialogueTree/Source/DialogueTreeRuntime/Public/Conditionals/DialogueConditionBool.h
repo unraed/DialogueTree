@@ -33,7 +33,7 @@ public:
 private: 
 	/** The query for the condition  */
 	UPROPERTY()
-	UDialogueQueryBool* Query;
+	TObjectPtr<UDialogueQueryBool> Query;
 
 	/** Whether the query should be true or false */
 	UPROPERTY(EditAnywhere, Category = "Dialogue")

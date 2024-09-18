@@ -42,5 +42,5 @@ public:
 private: 
 	/** Node to check */
 	UPROPERTY(EditAnywhere, Category = "Dialogue")
-	UDialogueNodeSocket* TargetNode;
+	TObjectPtr<UDialogueNodeSocket> TargetNode;
 };

@@ -4,33 +4,24 @@
 
 #include "CoreMinimal.h"
 #include "Events/DialogueEventBase.h"
-#include "ResetNodeVisits.generated.h"
+#include "SetResumeNode.generated.h"
 
 class UDialogueNodeSocket;
 
 /**
- * Dialogue event that clears/resets the visited status of a single node 
- * that the user can select from the dialogue editor.
+ * Dialogue event that sets the node to use when resuming the current dialogue.
  */
 UCLASS()
-class DIALOGUETREERUNTIME_API UResetNodeVisits : public UDialogueEventBase
+class DIALOGUETREERUNTIME_API USetResumeNode : public UDialogueEventBase
 {
 	GENERATED_BODY()
 	
-protected:
+public:
 	/** UDialogueEvent Impl. */
 	virtual void PlayEvent() override;
 	virtual bool HasAllRequirements() const override;
 	virtual FText GetGraphDescription_Implementation() const override;
 	/** End UDialogueEvent */
-
-public:
-	/**
-	* Gets the target node socket. 
-	* 
-	* @return UDialogueNodeSocket*, the target socket.
-	*/
-	UDialogueNodeSocket* GetTargetSocket() const;
 
 private:
 	/** Node to reset */

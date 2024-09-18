@@ -222,6 +222,12 @@ FName UGraphNodeDialogue::GetBaseID() const
 	return FName("DialogueNode");
 }
 
+void UGraphNodeDialogue::AssignAssetNodeID() const
+{
+	check(AssetNode && !ID.IsNone());
+	AssetNode->SetNodeID(ID);
+}
+
 void UGraphNodeDialogue::InitNodeInDialogueGraph(UEdGraph* OwningGraph)
 {
 	check(OwningGraph);

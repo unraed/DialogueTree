@@ -68,7 +68,7 @@ private:
 #if WITH_EDITORONLY_DATA
 	/** The graph node associated with the socket */
 	UPROPERTY(EditAnywhere, Category = "Dialogue")
-	UEdGraphNode* GraphNode = nullptr;
+	TObjectPtr<UEdGraphNode> GraphNode = nullptr;
 #endif 
 	/** The display name for the graph node */
 	UPROPERTY()
@@ -76,5 +76,5 @@ private:
 
 	/** The actual dialogue node associated with the socket */
 	UPROPERTY()
-	UDialogueNode* DialogueNode = nullptr;
+	TObjectPtr<UDialogueNode> DialogueNode = nullptr;
 };

@@ -77,9 +77,9 @@ private:
 public:
 	/** The query for the condition */
 	UPROPERTY(EditAnywhere, Instanced, Category="Dialogue")
-	UDialogueQuery* Query;
+	TObjectPtr<UDialogueQuery> Query;
 
 	/** The condition itself */
 	UPROPERTY(EditAnywhere, Category = "Dialogue")
-	UDialogueCondition* Condition;
+	TObjectPtr<UDialogueCondition> Condition;
 };

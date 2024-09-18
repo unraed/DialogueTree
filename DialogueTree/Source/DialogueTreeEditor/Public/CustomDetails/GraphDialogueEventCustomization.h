@@ -32,5 +32,16 @@ public:
 	static TSharedRef<IPropertyTypeCustomization> MakeInstance();
 
 private:
+	/**
+	* Gets the target event.
+	* 
+	* @param PropertyHandle - TSharedRef<IPropertyHandle>
+	* @return UDialogueEventBase*, the target event.
+	*/
 	UDialogueEventBase* GetTargetEvent(TSharedRef<IPropertyHandle> PropertyHandle);
+
+	/**
+	* Refreshes the details view/panel.
+	*/
+	void RefreshEditor();
 };

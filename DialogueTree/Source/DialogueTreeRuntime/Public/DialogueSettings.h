@@ -86,15 +86,31 @@ private:
 public:
 	/** The type of dialogue controller to use for managing dialogue */
 	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category="General")
-	TSubclassOf<ADialogueController> DialogueControllerType = 
+	TSoftClassPtr<ADialogueController> DialogueControllerType = 
 		LoadClass<ADialogueController>(nullptr, *DefaultControllerCoords);
 
-	/** The type of dialogue widget used to represent dialogue when using the 
-	* default controller. Defaults to W_BasicDialogueDisplay if none. */
+	/** The default minimum play time for a speech in dialogue. Can be 
+	* overridden on individual speeches. */
+	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "General")
+	float DefaultMinimumPlayTime = 3.f;
+
+	/** 
+	* The type of dialogue widget used to represent dialogue when using the 
+	* default controller. Defaults to W_BasicDialogueDisplay if none. 
+	*/
 	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, 
 		Category = "DefaultController", 
 		meta = (MustImplement = "/DialogueTree/DisplayWidgets/BI_SimpleDialogueDisplay.BI_SimpleDialogueDisplay_C"))
-	TSubclassOf<UUserWidget> DialogueWidgetType;
+	TSoftClassPtr<UUserWidget> DialogueWidgetType;
+
+	/** 
+	* The type of dialogue option widget to be used in the default dialogue 
+	* controller. Defaults to W_BasicDialogueOption.
+	*/
+	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly,
+		Category = "DefaultController",
+		meta = (MustImplement = "/DialogueTree/DisplayWidgets/BI_SimpleDialogueDisplay.BI_SimpleDialogueOption_C"))
+	TSoftClassPtr<UUserWidget> DialogueOptionWidgetType;
 
 	/** The ZOrder of the widget in the player viewport when using the default 
 	* controller. Should be set above most other widgets, as some widgets can 

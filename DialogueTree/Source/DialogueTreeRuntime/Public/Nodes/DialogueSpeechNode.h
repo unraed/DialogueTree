@@ -5,7 +5,7 @@
 //UE
 #include "CoreMinimal.h"
 //Plugin
-#include "DialogueNode.h"
+#include "DialogueEventNode.h"
 #include "SpeechDetails.h"
 //Generated
 #include "DialogueSpeechNode.generated.h"
@@ -17,7 +17,7 @@ class UDialogueTransition;
  * Dialogue node that plays a speech. 
  */
 UCLASS()
-class DIALOGUETREERUNTIME_API UDialogueSpeechNode : public UDialogueNode
+class DIALOGUETREERUNTIME_API UDialogueSpeechNode : public UDialogueEventNode
 {
 	GENERATED_BODY()
 
@@ -56,12 +56,17 @@ public:
 	*/
 	UDialogueSpeakerComponent* GetSpeaker() const;
 
-	/** DialogueNode Impl. */
+	/** DialogueEventNode Impl. */
 	virtual void EnterNode() override;
 	virtual FDialogueOption GetAsOption() override;
 	virtual void SelectOption(int32 InOptionIndex) override;
 	virtual void Skip() override;
-	/** End DialogueNode */
+	/** End DialogueEventNode */
+
+protected:
+	/** DialogueEventNode Impl */
+	virtual void TransitionIfNotBlocking() const override;
+	/** End DialogueEventNode */
 
 private:
 	/**
@@ -77,5 +82,5 @@ private:
 
 	/** The transition that governs how we leave the speech */
 	UPROPERTY()
-	UDialogueTransition* Transition = nullptr;
+	TObjectPtr<UDialogueTransition> Transition = nullptr;
 };

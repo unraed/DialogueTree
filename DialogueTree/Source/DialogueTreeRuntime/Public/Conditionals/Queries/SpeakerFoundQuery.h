@@ -35,5 +35,5 @@ public:
 private:
 	/** The speaker socket associated with the target speaker */
 	UPROPERTY(EditAnywhere, Category = "Dialogue")
-	UDialogueSpeakerSocket* Speaker;
+	TObjectPtr<UDialogueSpeakerSocket> Speaker;
 };

@@ -170,7 +170,7 @@ FVector2D FDialogueTreeConnectionDrawingPolicy::GetPinConnectionPoint(
 	{
 		FVector2D InputPinOffset = FVector2D(
 			0.f, 
-			PinRadius + ArrowRadius.X
+			(PinRadius + ArrowRadius.X)
 		);
 
 		return PinCenter - InputPinOffset;

@@ -70,9 +70,8 @@ private:
 
 private:
 	/** Conditions which govern branching */
-	//Todo: DT : Verify what happens when a branch node has no conditions
 	UPROPERTY()
-	TArray<UDialogueCondition*> Conditions;
+	TArray<TObjectPtr<UDialogueCondition>> Conditions;
  
 	/** If the branch should evaluate true if any condition does */
 	UPROPERTY()
@@ -80,9 +79,9 @@ private:
 
 	/** The node to transition to if branch evaluates as true */
 	UPROPERTY()
-	UDialogueNode* TrueNode;
+	TObjectPtr<UDialogueNode> TrueNode;
 
 	/** The node to transition to if branch evaluates false */
 	UPROPERTY()
-	UDialogueNode* FalseNode;
+	TObjectPtr<UDialogueNode> FalseNode;
 };

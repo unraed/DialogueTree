@@ -19,6 +19,7 @@
 #include "Graph/Nodes/GraphNodeDialogueEntry.h"
 #include "Graph/Nodes/GraphNodeDialogueEvent.h"
 #include "Graph/Nodes/GraphNodeDialogueJump.h"
+#include "Graph/Nodes/GraphNodeDialogueOptionLock.h"
 #include "Graph/Nodes/GraphNodeDialogueReroute.h"
 #include "Graph/Nodes/GraphNodeDialogueSpeech.h"
 #include "Nodes/DialogueNode.h"
@@ -155,6 +156,7 @@ void UDialogueEdGraphSchema::GetGraphContextActions(
 	GetConditionalNodeMenuActions(ContextMenuBuilder);
 	GetEventNodeMenuActions(ContextMenuBuilder);
 	GetJumpNodeMenuActions(ContextMenuBuilder);
+	GetOptionLockNodeMenuActions(ContextMenuBuilder);
 }
 
 void UDialogueEdGraphSchema::GetContextMenuActions(UToolMenu* Menu, 
@@ -585,6 +587,37 @@ void UDialogueEdGraphSchema::GetJumpNodeMenuActions(
 		MenuText,
 		MenuTooltip,
 		TemplateJump
+	));
+	ContextMenuBuilder.AddAction(NewAction);
+}
+
+void UDialogueEdGraphSchema::GetOptionLockNodeMenuActions(
+	FGraphContextMenuBuilder& ContextMenuBuilder) const
+{
+	//Category
+	FText MenuCategory = LOCTEXT("OptionLockNodeMenuCategory",
+		"OptionLock");
+
+	//Add event node 
+	UGraphNodeDialogueOptionLock* TemplateOptionLock =
+		UGraphNodeDialogueOptionLock::MakeTemplate(
+			ContextMenuBuilder.OwnerOfTemporaries
+		);
+
+	FText MenuText = LOCTEXT(
+		"OptionLockNodeCreationText",
+		"Option Lock"
+	);
+	FText MenuTooltip = LOCTEXT(
+		"OptionLockNodeCreationTooltip",
+		"Creates a node that marks its child option as 'locked' unless the specified conditions are passed. If transitioned to directly, simply transitions on to the child node."
+	);
+
+	TSharedPtr<FNewDialogueNodeAction> NewAction(new FNewDialogueNodeAction(
+		MenuCategory,
+		MenuText,
+		MenuTooltip,
+		TemplateOptionLock
 	));
 	ContextMenuBuilder.AddAction(NewAction);
 }

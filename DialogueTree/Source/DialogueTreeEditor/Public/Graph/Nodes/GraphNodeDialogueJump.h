@@ -50,5 +50,5 @@ public:
 private:
 	/** The node to jump to */
 	UPROPERTY(EditAnywhere, Category = "Dialogue")
-	UDialogueNodeSocket* JumpTarget;
+	TObjectPtr<UDialogueNodeSocket> JumpTarget;
 };

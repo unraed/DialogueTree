@@ -4,6 +4,7 @@
 #include "Graph/Nodes/GraphNodeDialogueSpeech.h"
 //Plugin
 #include "Dialogue.h"
+#include "DialogueSettings.h"
 #include "DialogueSpeakerSocket.h"
 #include "Graph/DialogueEdGraph.h"
 #include "Graph/DialogueEdGraphSchema.h"
@@ -23,6 +24,12 @@ UGraphNodeDialogueSpeech* UGraphNodeDialogueSpeech::MakeTemplate(UObject* Outer,
         NewObject<UGraphNodeDialogueSpeech>(Outer);
     NewSpeech->SetSpeaker(InSpeaker);
     NewSpeech->SetTransitionType(TransitionType);
+
+    //Apply default settings 
+    const UDialogueSettings* Settings = GetDefault<UDialogueSettings>();
+    check(Settings);
+    NewSpeech->MinimumPlayTime = Settings->DefaultMinimumPlayTime;
+
 
     return NewSpeech;
 }
@@ -117,16 +124,18 @@ void UGraphNodeDialogueSpeech::CreateAssetNode(UDialogue* InAsset)
     SpeechDetails.SpeechAudio = SpeechAudio;
     SpeechDetails.MinimumPlayTime = MinimumPlayTime;
     SpeechDetails.bCanSkip = bCanSkip;
-    SpeechDetails.BehaviorFlags = BehaviorFlags;
+    SpeechDetails.GameplayTags = GameplayTags;
 
     NewNode->InitSpeechData(SpeechDetails, TransitionType);
-
-    //Add node to the dialogue
-    InAsset->AddNode(NewNode);
 }
 
 bool UGraphNodeDialogueSpeech::CanCompileNode()
 {
+    if (!Super::CanCompileNode()) 
+    {
+        return false;
+    }
+    
     UDialogueEdGraph* Graph = GetDialogueGraph();
 
     if (TransitionType 

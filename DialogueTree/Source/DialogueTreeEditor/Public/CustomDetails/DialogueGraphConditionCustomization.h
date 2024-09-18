@@ -7,6 +7,7 @@
 
 class UDialogueEdGraph;
 class UDialogueGraphCondition;
+class UGraphNodeDialogue;
 class IDetailPropertyRow;
 class IPropertyHandle;
 
@@ -110,7 +111,7 @@ private:
 	/**
 	* Refreshes the details view/panel. 
 	*/
-	void RefreshDetailsView();
+	void RefreshEditor();
 
 	/**
 	* Sets up a new property row. Does nothing if the NewRow pointer is null. 
@@ -125,4 +126,10 @@ private:
 
 	/** The graph the selected node is a part of */
 	TWeakObjectPtr<UDialogueEdGraph> TargetGraph;
+
+	/** The node that owns the condition */
+	TWeakObjectPtr<UGraphNodeDialogue> TargetGraphNode;
+
+	/** Utils */
+	TSharedPtr<IPropertyUtilities> Utils;
 };

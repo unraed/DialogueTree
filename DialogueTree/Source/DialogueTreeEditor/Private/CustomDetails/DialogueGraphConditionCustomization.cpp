@@ -66,6 +66,8 @@ void FDialogueGraphConditionCustomization::CustomizeChildren(
 	}
 
 	CreateChildPropertyRows(PropertyHandle, ChildBuilder);
+
+	
 }
 
 TSharedRef<IPropertyTypeCustomization> 
@@ -104,10 +106,8 @@ void FDialogueGraphConditionCustomization::CachePrerequisites(
 
 	TargetGraphCondition = ValueAsCondition;
 
-	//Get graph 
-	TSharedPtr<IPropertyUtilities> Utils = 
-		CustomizationUtils.GetPropertyUtilities();
-
+	//Get graph and node
+	Utils = CustomizationUtils.GetPropertyUtilities();
 	if (!Utils.IsValid())
 	{
 		return;
@@ -122,9 +122,14 @@ void FDialogueGraphConditionCustomization::CachePrerequisites(
 	}
 
 	UObject* FirstSelected = SelectedObjects[0].Get();
-	UGraphNodeDialogue* SelectedNode = Cast<UGraphNodeDialogue>(FirstSelected);
+	TargetGraphNode = Cast<UGraphNodeDialogue>(FirstSelected);
 	
-	TargetGraph = SelectedNode->GetDialogueGraph();
+	if (!TargetGraphNode.IsValid())
+	{
+		return;
+	}
+
+	TargetGraph = TargetGraphNode->GetDialogueGraph();
 }
 
 bool FDialogueGraphConditionCustomization::HasPrerequisites()
@@ -236,8 +241,6 @@ void FDialogueGraphConditionCustomization::CreateHeaderDisplayText(TSharedRef<IP
 
 	if (OwnedQuery && OwnedCondition && OwnedCondition->IsValidCondition())
 	{
-		//Todo: figure out arg texts
-		TMap<FName, FText> TempArgTexts; //Todo: remove
 		FText QueryText = OwnedQuery->GetGraphDescription();
 		FText ConditionText = OwnedCondition->GetGraphDescription(QueryText);
 
@@ -339,19 +342,25 @@ void FDialogueGraphConditionCustomization::CreateChildPropertyRows(TSharedRef<IP
 	}
 }
 
-void FDialogueGraphConditionCustomization::RefreshDetailsView()
+void FDialogueGraphConditionCustomization::RefreshEditor()
 {
 	//Refresh the details view
-	FPropertyEditorModule& PropertyEditorModule =
-		FModuleManager::GetModuleChecked<FPropertyEditorModule>(
-			"PropertyEditor"
-		);
-	PropertyEditorModule.NotifyCustomizationModuleChanged();
-
-	//Refresh the owning node
-	if (TargetGraph.IsValid())
+	if (Utils.IsValid())
 	{
-		TargetGraph->UpdateAllNodeVisuals();
+		Utils->ForceRefresh();
+	}
+
+	//Refresh the owning condition 
+	if (TargetGraphCondition.IsValid()
+		&& TargetGraphCondition->ShouldRefreshCondition())
+	{
+		TargetGraphCondition->RefreshCondition();
+	}
+
+	//Refresh the graph node 
+	if (TargetGraphNode.IsValid())
+	{
+		TargetGraphNode->UpdateDialogueNode();
 	}
 }
 
@@ -367,12 +376,12 @@ void FDialogueGraphConditionCustomization::InitNewPropertyRow(IDetailPropertyRow
 			NewHandle->SetOnPropertyValueChanged(
 				FSimpleDelegate::CreateSP(
 					this,
-					&FDialogueGraphConditionCustomization::RefreshDetailsView
+				&FDialogueGraphConditionCustomization::RefreshEditor
 				)
 			);
 			NewHandle->SetOnChildPropertyValueChanged(
 				FSimpleDelegate::CreateSP(
-					this, &FDialogueGraphConditionCustomization::RefreshDetailsView
+					this, &FDialogueGraphConditionCustomization::RefreshEditor
 				)
 			);
 		}

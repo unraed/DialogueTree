@@ -10,11 +10,13 @@
 #include "Graph/Nodes/GraphNodeDialogueEvent.h"
 #include "Graph/Nodes/GraphNodeDialogueJump.h"
 #include "Graph/Nodes/GraphNodeDialogueReroute.h"
+#include "Graph/Nodes/GraphNodeDialogueOptionLock.h"
 #include "Graph/Nodes/GraphNodeDialogueSpeech.h"
 #include "Graph/Slate/SGraphNodeDialogueBase.h"
 #include "Graph/Slate/SGraphNodeDialogueBranch.h"
 #include "Graph/Slate/SGraphNodeDialogueEvent.h"
 #include "Graph/Slate/SGraphNodeDialogueJump.h"
+#include "Graph/Slate/SGraphNodeDialogueOptionLock.h"
 #include "Graph/Slate/SGraphNodeDialogueSpeech.h"
 
 TSharedPtr<class SGraphNode> FDialogueTreeNodeFactory::CreateNode(
@@ -49,6 +51,12 @@ TSharedPtr<class SGraphNode> FDialogueTreeNodeFactory::CreateNode(
 		Cast<UGraphNodeDialogueJump>(Node))
 	{
 		return SNew(SGraphNodeDialogueJump, JumpNode);
+	}
+	//If we are dealing with an option lock node 
+	else if (UGraphNodeDialogueOptionLock* LockNode =
+		Cast<UGraphNodeDialogueOptionLock>(Node))
+	{
+		return SNew(SGraphNodeDialogueOptionLock, LockNode);
 	}
 	//If we are dealing with a knot type proxy node 
 	else if (UGraphNodeDialogueReroute* KnotNode = 

@@ -59,12 +59,23 @@ void UInputDialogueTransition::SelectOption(int32 InOptionIndex)
 	{
 		UE_LOG(
 			LogDialogueTree,
-			Error,
-			TEXT("Terminating dialogue: attempted to transition to invalid option index.")
+			Warning,
+			TEXT("Attempted to transition to invalid option index.")
 		);
-
-		OwningNode->GetDialogue()->EndDialogue();
 		return;
+	}
+
+	//If option locked, do nothing more
+	if (Options[InOptionIndex].Details.bIsLocked)
+	{
+		return;
+	}
+
+	//Stop playing audio 
+	UDialogueSpeakerComponent* Speaker = OwningNode->GetSpeaker();
+	if (Speaker)
+	{
+		Speaker->Stop();
 	}
 
 	//Transition to the selected node 
@@ -80,7 +91,7 @@ FText UInputDialogueTransition::GetDisplayName() const
 FText UInputDialogueTransition::GetNodeCreationTooltip() const
 {
 	return LOCTEXT(
-		"Tooltip", 
+		"Tooltip",
 		"Speech node that waits for the user to select an option"
 		"before transitioning."
 	);

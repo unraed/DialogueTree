@@ -156,9 +156,12 @@ private:
 	* Traverse the tree of graph nodes recursively, linking up their asset 
 	* nodes to construct an equivalent tree in the dialogue asset. 
 	* 
-	* @param InRoot - UGraphNodeDialogue*, the root of the current subtree. 
+	* @param InRoot - UGraphNodeDialogue*, the root of the current subtree.
+	* @param VisitedNodes - TSet<UGraphNodeDialogue*>, the nodes we have
+	* already visited. 
 	*/
-	void UpdateAssetTreeRecursive(UGraphNodeDialogue* InRoot);
+	void UpdateAssetTreeRecursive(UGraphNodeDialogue* InRoot, 
+		TSet<UGraphNodeDialogue*> VisitedNodes);
 
 	/**
 	* Behaviors to trigger when the graph changes. 
@@ -177,9 +180,9 @@ private:
 private:
 	/** The root node of the graph, where the dialogue starts playing */
 	UPROPERTY()
-	UGraphNodeDialogue* Root;
+	TObjectPtr<UGraphNodeDialogue> Root;
 
 	/** The collection of dialogue nodes, keyed to their IDs for easy access */
 	UPROPERTY()
-	TMap<FName, UGraphNodeDialogue*> NodeMap;
+	TMap<FName, TObjectPtr<UGraphNodeDialogue>> NodeMap;
 };

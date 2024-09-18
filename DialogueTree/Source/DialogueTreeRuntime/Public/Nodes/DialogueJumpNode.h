@@ -34,5 +34,5 @@ public:
 private:
 	/** The target node to "jump" to */
 	UPROPERTY()
-	UDialogueNode* JumpTarget;
+	TObjectPtr<UDialogueNode> JumpTarget;
 };

@@ -69,9 +69,9 @@ public:
 private:
 	/** The speaker socket for the target speaker */
 	UPROPERTY(EditAnywhere, Category = "Dialogue")
-	UDialogueSpeakerSocket* Speaker;
+	TObjectPtr<UDialogueSpeakerSocket> Speaker;
 
 	/** Optional additional speakers to attach to the event */
 	UPROPERTY(EditAnywhere, Category = "Dialogue")
-	TArray<UDialogueSpeakerSocket*> AdditionalSpeakers;
+	TArray<TObjectPtr<UDialogueSpeakerSocket>> AdditionalSpeakers;
 };

@@ -7,7 +7,7 @@
 #include "GameplayTagContainer.h"
 //Plugin
 #include "Graph/PickableDialogueSpeaker.h"
-#include "GraphNodeDialogue.h"
+#include "GraphNodeDialogueEvent.h"
 //Generated
 #include "GraphNodeDialogueSpeech.generated.h"
 
@@ -19,7 +19,7 @@ class UDialogueTransition;
  */
 UCLASS()
 class DIALOGUETREEEDITOR_API UGraphNodeDialogueSpeech : 
-	public UGraphNodeDialogue
+	public UGraphNodeDialogueEvent
 {
 	GENERATED_BODY()
 
@@ -140,9 +140,9 @@ private:
 	UPROPERTY(EditAnywhere, Category = "SpeechContent")
 	bool bCanSkip = true;
 
-	/** Flags/GameplayTags associated with the speech. */
+	/** GameplayTags associated with the speech. */
 	UPROPERTY(EditAnywhere, Category = "BehaviorFlags")
-	FGameplayTagContainer BehaviorFlags;
+	FGameplayTagContainer GameplayTags;
 
 	/** The strategy used to transition out of the speech/continue dialogue */
 	UPROPERTY(EditAnywhere, NoClear, Category = "Transition")

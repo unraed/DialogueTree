@@ -46,7 +46,7 @@ private:
 	* 
 	* @param InPinGeom - const FGeometry&, the pin's geometry.
 	* @param InDirection - const EEdGraphPinDirection, whether an
-	* input or output pin. 
+	* input or output pin.
 	* @return FVector2D - Location of the connection point. 
 	*/
 	FVector2D GetPinConnectionPoint(const FGeometry& InPinGeom, 

@@ -248,6 +248,15 @@ private:
 		const;
 
 	/**
+	* Sets up context menu for option lock node creation.
+	*
+	* @param ContextMenuBuilder - FGraphContextMenuBuilder&, builder of the
+	* current context menu.
+	*/
+	void GetOptionLockNodeMenuActions(FGraphContextMenuBuilder&
+		ContextMenuBuilder) const;
+
+	/**
 	* Sets up context menu for breaking a pin's links. Note: this proved 
 	* necessary because pushing the pins out of the node prevents them being 
 	* right clicked and thus requires a custom pin link breakage menu. 

@@ -61,11 +61,18 @@ public:
 	*/
 	TArray<FText> GetGraphDescriptions() const;
 
+	/**
+	* Returns the number of events associated with the node.
+	* 
+	* @return int - number of events.
+	*/
+	int GetNumEvents() const;
+
 private:
 	void FinalizeNodeSocket(UDialogueEventBase* InEvent);
 
 private:
 	/** The list of user-defined events to play */
-	UPROPERTY(EditAnywhere, Category = "Dialogue")
+	UPROPERTY(EditAnywhere, Category = "DialogueEvents")
 	TArray<FGraphDialogueEvent> Events;
 };

@@ -8,6 +8,8 @@
 
 class UDialogue;
 
+DECLARE_DELEGATE(FDialogueEventSignature);
+
 /**
  * Base class for dialogue events. Does not require a speaker. 
  */
@@ -34,6 +36,37 @@ public:
 	virtual FText GetGraphDescription_Implementation() const;
 
 	/**
+	* Checks if the event is currently trying to block/in progress. 
+	* 
+	* @return bool - True if blocking, False otherwise. 
+	*/
+	UFUNCTION(BlueprintPure, Category="DialogueEvent")
+	bool GetIsBlocking() const;
+
+	/**
+	* Sets the blocking status of the event to true. Where possible, the 
+	* dialogue will attempt to wait until the event completes. StopBlocking() 
+	* should be called to free up the dialogue to continue. 
+	*/
+	UFUNCTION(BlueprintCallable, Category="DialogueEvent")
+	void StartBlocking();
+
+	/**
+	* Marks the event as complete/frees up the dialogue to continue. Only 
+	* needs to be called if StartBlocking() has been called first. 
+	*/
+	UFUNCTION(BlueprintCallable, Category = "DialogueEvent")
+	void StopBlocking();
+
+	/**
+	* User specified behavior for when a speech the event is attached
+	* to gets skipped.
+	*/
+	UFUNCTION(BlueprintNativeEvent, Category = "Dialogue")
+	void OnSkipped();
+	virtual void OnSkipped_Implementation() {};
+
+	/**
 	* Triggers the event.
 	*/
 	virtual void PlayEvent();
@@ -48,5 +81,13 @@ public:
 protected:
 	/** Dialogue owning this event */
 	UPROPERTY()
-	class UDialogue* Dialogue;
+	TObjectPtr<UDialogue> Dialogue;
+
+	/** Whether or not the event is still in progress/the dialogue should 
+	* wait for it. */
+	UPROPERTY()
+	bool bBlocking = false;
+
+public:
+	FDialogueEventSignature OnStoppedBlocking;
 };

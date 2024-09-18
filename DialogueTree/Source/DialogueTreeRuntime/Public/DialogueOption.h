@@ -9,6 +9,8 @@
 //Generated
 #include "DialogueOption.generated.h"
 
+class UDialogueNode;
+
 /**
 * Struct used for representing a selectable dialogue option. 
 */
@@ -17,6 +19,11 @@ struct FDialogueOption
 {
 	GENERATED_BODY()
 
+	/** The speech details associated with the option */
+	UPROPERTY()
 	FSpeechDetails Details = FSpeechDetails();
-	class UDialogueNode* TargetNode = nullptr;
+
+	/** The node the option transitions to */
+	UPROPERTY()
+	TObjectPtr<UDialogueNode> TargetNode = nullptr;
 };

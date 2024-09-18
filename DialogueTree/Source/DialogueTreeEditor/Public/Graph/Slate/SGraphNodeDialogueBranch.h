@@ -57,7 +57,7 @@ private:
 
 private:
 	/** Cached branch node this represents */
-	UGraphNodeDialogueBranch* BranchNode;
+	TObjectPtr<UGraphNodeDialogueBranch> BranchNode;
 
 	/** Constants */
 	const FMargin CONDITION_BOX_PADDING = FMargin(10.f, 7.f, 10.f, 7.f);

@@ -78,6 +78,11 @@ void FGraphDialogueEventCustomization::CustomizeChildren(
 		return;
 	}
 
+	//Get property utilities
+	TSharedPtr<IPropertyUtilities> Utils =
+		CustomizationUtils.GetPropertyUtilities();
+	check(Utils.IsValid());
+
 	//Get num child properties
 	uint32 NumChildProperties;
 	PropertyHandle->GetNumChildren(NumChildProperties);
@@ -91,6 +96,23 @@ void FGraphDialogueEventCustomization::CustomizeChildren(
 		if (ChildHandle.IsValid() && ChildHandle->IsValidHandle())
 		{
 			ChildBuilder.AddProperty(ChildHandle.ToSharedRef());
+
+			ChildHandle->SetOnPropertyValueChanged(
+				FSimpleDelegate::CreateLambda(
+					[Utils]()
+					{
+						Utils->ForceRefresh();
+					}
+				)
+			);
+			ChildHandle->SetOnChildPropertyValueChanged(
+				FSimpleDelegate::CreateLambda(
+					[Utils]()
+					{
+						Utils->ForceRefresh();
+					}
+				)
+			);
 		}
 	}
 }

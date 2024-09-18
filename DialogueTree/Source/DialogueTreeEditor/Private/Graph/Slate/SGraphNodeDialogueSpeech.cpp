@@ -118,7 +118,18 @@ FText SGraphNodeDialogueSpeech::GetSpeakerNameText() const
 FText SGraphNodeDialogueSpeech::GetNodeSubtitleText() const
 {
 	check(SpeechNode);
-	return FText::FromName(SpeechNode->GetID());
+
+	FText SubtitleText = FText::FromName(SpeechNode->GetID());
+
+	if (SpeechNode->GetNumEvents() > 0)
+	{
+		SubtitleText = FText::Format(
+			LOCTEXT("EventSubtitle", "{0}  (+Events)"),
+			SubtitleText
+		);
+	}
+
+	return SubtitleText;
 }
 
 TSharedRef<SWidget> SGraphNodeDialogueSpeech::GetSpeakerNameWidget() const

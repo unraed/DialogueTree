@@ -53,5 +53,5 @@ public:
 
 private:
 	UPROPERTY()
-	UDialogue* Dialogue;
+	TObjectPtr<UDialogue> Dialogue;
 };

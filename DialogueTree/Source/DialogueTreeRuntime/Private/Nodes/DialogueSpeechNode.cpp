@@ -39,8 +39,8 @@ void UDialogueSpeechNode::SelectOption(int32 InOptionIndex)
 
 void UDialogueSpeechNode::EnterNode()
 {
-	//Call super
-	Super::EnterNode();
+	//Play all events
+	PlayEvents();
 
 	//Verify speaker is actually present
 	if (!Dialogue->SpeakerIsPresent(Details.SpeakerName))
@@ -84,8 +84,14 @@ void UDialogueSpeechNode::Skip()
 {
 	if (Details.bCanSkip)
 	{
+		Super::Skip();
 		Transition->Skip();
 	}
+}
+
+void UDialogueSpeechNode::TransitionIfNotBlocking() const
+{
+	Transition->CheckTransitionConditions();
 }
 
 FDialogueOption UDialogueSpeechNode::GetAsOption()
@@ -104,11 +110,10 @@ void UDialogueSpeechNode::StartAudio()
 
 		if (Details.SpeechAudio)
 		{
-			Speaker->SetSound(Details.SpeechAudio);
-			Speaker->Play();
+			Speaker->PlaySpeechAudioClip(Details.SpeechAudio);
 		}
 
 		//Set any behavior flags
-		Speaker->SetBehaviorFlags(Details.BehaviorFlags);
+		Speaker->SetCurrentGameplayTags(Details.GameplayTags);
 	}
 }

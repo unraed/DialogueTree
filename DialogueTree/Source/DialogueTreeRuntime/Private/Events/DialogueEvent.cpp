@@ -2,6 +2,8 @@
 
 //Header
 #include "Events/DialogueEvent.h"
+//Unreal
+#include "Engine/World.h"
 //Plugin
 #include "Dialogue.h"
 #include "DialogueSpeakerComponent.h"
@@ -12,6 +14,7 @@ void UDialogueEvent::PlayEvent()
 {
 	check(Dialogue && Speaker);
 
+	bBlocking = false;
 	UDialogueSpeakerComponent* SpeakerComponent =
 		Speaker->GetSpeakerComponent(Dialogue);
 
@@ -66,6 +69,42 @@ bool UDialogueEvent::IsValidEvent_Implementation() const
 	return true;
 }
 
+AActor* UDialogueEvent::SpawnActorToCurrentWorld(
+	TSubclassOf<AActor> ActorClass, const FVector Location, 
+	const FRotator Rotation,
+	AActor* Owner,
+	ESpawnActorCollisionHandlingMethod CollisionHandlingMethod)
+{
+	if (!Speaker || !Dialogue || !ActorClass)
+	{
+		return nullptr;
+	}
+
+	UDialogueSpeakerComponent* SpeakerComponent = 
+		Speaker->GetSpeakerComponent(Dialogue);
+	if (!SpeakerComponent)
+	{
+		return nullptr;
+	}
+
+	UWorld* World = SpeakerComponent->GetWorld();
+	if (!World)
+	{
+		return nullptr;
+	}
+
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.Owner = Owner;
+	SpawnParams.SpawnCollisionHandlingOverride =
+		CollisionHandlingMethod;
+	return World->SpawnActor(
+		ActorClass, 
+		&Location, 
+		&Rotation, 
+		SpawnParams
+	);
+}
+
 void UDialogueEvent::SetSpeaker(UDialogueSpeakerSocket* InSpeaker)
 {
 	Speaker = InSpeaker;
@@ -79,4 +118,15 @@ UDialogueSpeakerSocket* UDialogueEvent::GetSpeakerSocket() const
 TArray<UDialogueSpeakerSocket*> UDialogueEvent::GetAdditionalSpeakerSockets() const
 {
 	return AdditionalSpeakers;
+}
+
+const FSpeechDetails UDialogueEvent::GetCurrentSpeechDetails() const
+{
+	if (UDialogueSpeechNode* Speech = 
+		GetTypedOuter<UDialogueSpeechNode>())
+	{
+		return Speech->GetDetails();
+	}
+
+	return FSpeechDetails();
 }

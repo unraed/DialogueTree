@@ -62,28 +62,33 @@ void FDialogueSocketCustomizationBase::CustomizeChildren(TSharedRef<IPropertyHan
 	CreatePicker();
 }
 
-void FDialogueSocketCustomizationBase::GetTargetObjects(TSharedRef<IPropertyHandle> PropertyHandle, TSharedPtr<IPropertyUtilities> Utils)
+void FDialogueSocketCustomizationBase::GetTargetObjects(TSharedRef<IPropertyHandle> PropertyHandle, TSharedPtr<IPropertyUtilities> Utilities)
 {
-	if (!Utils.IsValid() || !PropertyHandle->IsValidHandle())
+	if (!Utilities.IsValid() || !PropertyHandle->IsValidHandle())
 	{
 		return;
 	}
+
+	//Cache utils
+	Utils = Utilities;
 
 	//Get array of selected objects
 	TArray<TWeakObjectPtr<UObject>> SelectedObjects;
 	SelectedObjects = Utils->GetSelectedObjects();
 
 	//Convert selected objects to dialogue nodes
-	UGraphNodeDialogue* SelectedNode = nullptr;
-	if (!SelectedObjects.IsEmpty() && SelectedObjects[0].IsValid())
+	if (SelectedObjects.IsEmpty() || !SelectedObjects[0].IsValid())
 	{
-		SelectedNode = Cast<UGraphNodeDialogue>(SelectedObjects[0].Get());
+		return;
 	}
+	TargetGraphNode = Cast<UGraphNodeDialogue>(
+		SelectedObjects[0].Get()
+	);
 
 	//Cache the graph from the node 
-	if (SelectedNode)
+	if (TargetGraphNode.IsValid())
 	{
-		TargetGraph = SelectedNode->GetDialogueGraph();
+		TargetGraph = TargetGraphNode->GetDialogueGraph();
 	}
 
 	//Get the target property 
@@ -235,18 +240,17 @@ void FDialogueSocketCustomizationBase::OnMenuOpenChanged(bool bOpen)
 	}
 }
 
-void FDialogueSocketCustomizationBase::RefreshDetailsView()
+void FDialogueSocketCustomizationBase::RefreshEditor()
 {
 	//Refresh the details view
-	FPropertyEditorModule& PropertyEditorModule =
-		FModuleManager::GetModuleChecked<FPropertyEditorModule>(
-			"PropertyEditor"
-		);
-	PropertyEditorModule.NotifyCustomizationModuleChanged();
-
-	//Refresh the graph
-	if (TargetGraph.IsValid())
+	if (Utils.IsValid())
 	{
-		TargetGraph->UpdateAllNodeVisuals();
+		Utils->RequestRefresh();
+	}
+
+	//Refresh the graph node
+	if (TargetGraphNode.IsValid())
+	{
+		TargetGraphNode->UpdateDialogueNode();
 	}
 }
