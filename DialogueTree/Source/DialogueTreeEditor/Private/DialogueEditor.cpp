@@ -148,11 +148,8 @@ bool FDialogueEditor::OnRequestClose()
 void FDialogueEditor::AddReferencedObjects(FReferenceCollector& Collector)
 {
     check(TargetDialogue);
-    UEdGraph* TargetGraph = TargetDialogue->GetEdGraphIfLoaded();
-    check(TargetGraph);
 
     Collector.AddReferencedObject(TargetDialogue);
-    Collector.AddReferencedObject(TargetGraph);
 }
 
 FString FDialogueEditor::GetReferencerName() const

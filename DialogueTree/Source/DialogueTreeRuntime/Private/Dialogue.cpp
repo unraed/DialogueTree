@@ -289,12 +289,7 @@ UDialogueNode* UDialogue::GetRootNode() const
 
 UEdGraph* UDialogue::GetEdGraph() const
 {
-	return EdGraph.LoadSynchronous();
-}
-
-UEdGraph* UDialogue::GetEdGraphIfLoaded() const
-{
-	return EdGraph.Get();
+	return EdGraph;
 }
 
 void UDialogue::SetEdGraph(UEdGraph* InEdGraph)

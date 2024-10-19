@@ -287,15 +287,6 @@ public:
 	UEdGraph* GetEdGraph() const;
 
 	/**
-	* Retrieve the editor graph associated with this dialogue if loaded. If 
-	* unloaded will simply return nullptr. Used when dealing with garbage 
-	* collector.
-	*
-	* @return UEdGraph*, the editor graph for the dialogue if loaded.
-	*/
-	UEdGraph* GetEdGraphIfLoaded() const;
-
-	/**
 	* Set the editor graph associated with this dialogue. 
 	* 
 	* @param InEdGraph - UEdGraph*, graph to set. 
@@ -439,7 +430,7 @@ private:
 
 	/** The editor graph associated with this dialogue */
 	UPROPERTY()
-	TSoftObjectPtr<UEdGraph> EdGraph = nullptr;
+	TObjectPtr<UEdGraph> EdGraph = nullptr;
 
 #endif
 
