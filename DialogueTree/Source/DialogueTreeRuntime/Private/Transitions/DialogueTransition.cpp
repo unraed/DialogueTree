@@ -151,6 +151,13 @@ void UDialogueTransition::OnDonePlayingContent()
 
 void UDialogueTransition::OnMinPlayTimeElapsed()
 {
+	// Invalidate the timer for the skipped nodes.
+	const auto Speaker = OwningNode->GetSpeaker();
+	if (Speaker)
+	{
+		Speaker->GetWorld()->GetTimerManager().ClearTimer(MinPlayTimeHandle);
+	}
+
 	//Mark min play time elapsed
 	bMinPlayTimeElapsed = true;
 
