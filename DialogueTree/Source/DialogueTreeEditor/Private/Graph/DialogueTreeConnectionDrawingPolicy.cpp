@@ -47,8 +47,8 @@ FDialogueTreeConnectionDrawingPolicy::FDialogueTreeConnectionDrawingPolicy(
 }
 
 void FDialogueTreeConnectionDrawingPolicy::DrawPreviewConnector(
-	const FGeometry& PinGeometry, const FVector2D& StartPoint,
-	const FVector2D& EndPoint, UEdGraphPin* Pin)
+	const FGeometry& PinGeometry, const FVector2f& StartPoint,
+	const FVector2f& EndPoint, UEdGraphPin* Pin)
 {
 	FConnectionParams ConnectionParams;
 	DetermineWiringStyle(Pin, nullptr, ConnectionParams);
@@ -72,7 +72,7 @@ void FDialogueTreeConnectionDrawingPolicy::DrawPreviewConnector(
 }
 
 void FDialogueTreeConnectionDrawingPolicy::DrawSplineWithArrow(
-	const FVector2D& StartPoint, const FVector2D& EndPoint, 
+	const FVector2f& StartPoint, const FVector2f& EndPoint, 
 	const FConnectionParams& Params)
 {
 	// Draw the spline
@@ -119,11 +119,11 @@ void FDialogueTreeConnectionDrawingPolicy::DrawSplineWithArrow(
 	const FGeometry& StartGeom, const FGeometry& EndGeom, 
 	const FConnectionParams& Params)
 {
-	const FVector2D StartPoint = GetPinConnectionPoint(
+	const FVector2f StartPoint = GetPinConnectionPoint(
 		StartGeom, 
 		EGPD_Output
 	);
-	const FVector2D EndPoint = GetPinConnectionPoint(
+	const FVector2f EndPoint = GetPinConnectionPoint(
 		EndGeom, 
 		EGPD_Input
 	);
@@ -135,11 +135,11 @@ void FDialogueTreeConnectionDrawingPolicy::DrawSplineWithArrow(
 	);
 }
 
-FVector2D FDialogueTreeConnectionDrawingPolicy::ComputeSplineTangent(
-	const FVector2D& Start, const FVector2D& End) const
+FVector2f FDialogueTreeConnectionDrawingPolicy::ComputeSplineTangent(
+	const FVector2f& Start, const FVector2f& End) const
 {
 	//Calculate delta 
-	const FVector2D DeltaPos = End - Start;
+	const FVector2f DeltaPos = End - Start;
 
 	//Determine directionality
 	const FSplineShape Shape = GetSplineShape(DeltaPos);
@@ -155,20 +155,20 @@ FVector2D FDialogueTreeConnectionDrawingPolicy::ComputeSplineTangent(
 	);
 
 	//Return final tangent 
-	return FVector2D(
+	return FVector2f(
 		ClampedTensionX * Shape.ScaleX, 
 		ClampedTensionY * Shape.ScaleY
 	);
 }
 
-FVector2D FDialogueTreeConnectionDrawingPolicy::GetPinConnectionPoint(
+FVector2f FDialogueTreeConnectionDrawingPolicy::GetPinConnectionPoint(
 	const FGeometry& InPinGeom, const EEdGraphPinDirection InDirection) const
 {
-	FVector2D PinCenter = FGeometryHelper::CenterOf(InPinGeom);
+	FVector2f PinCenter = FGeometryHelper::CenterOf(InPinGeom);
 
 	if (InDirection == EGPD_Input)
 	{
-		FVector2D InputPinOffset = FVector2D(
+		FVector2f InputPinOffset = FVector2f(
 			0.f, 
 			(PinRadius + ArrowRadius.X)
 		);
@@ -177,7 +177,7 @@ FVector2D FDialogueTreeConnectionDrawingPolicy::GetPinConnectionPoint(
 	}
 	else //Output pin 
 	{
-		FVector2D OutputPinOffset = FVector2D(0.f, PinRadius);
+		FVector2f OutputPinOffset = FVector2f(0.f, PinRadius);
 
 		return PinCenter + OutputPinOffset;
 	}
@@ -185,7 +185,7 @@ FVector2D FDialogueTreeConnectionDrawingPolicy::GetPinConnectionPoint(
 
 FDialogueTreeConnectionDrawingPolicy::FSplineShape
 	FDialogueTreeConnectionDrawingPolicy::GetSplineShape(
-		FVector2D DeltaPos) const
+		FVector2f DeltaPos) const
 {
 	//Determine directionality
 	const bool bGoingForward = DeltaPos.Y <= 0.0f;
